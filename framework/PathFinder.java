@@ -7,6 +7,8 @@
 import java.awt.*;
 import java.awt.geom.*;
 
+import util.*;
+
 /**
  * An object that tries to find it's way to a target. PathFinders die when they get into water.
  * <br>
@@ -265,6 +267,9 @@ class PathFinderDirector implements Director {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: PathFinder.java,v $
+ *  Revision 1.7  2002/11/07 01:04:12  quintesse
+ *  Added import statement because some helper classes have been moved to util.*
+ *
  *  Revision 1.6  2002/11/05 20:33:35  puf
  *  Now makes use of the functions in StringHelper and MathHelper.
  *  Started working on PathFinderDirector, which will try to find a path in a more intelligent way.
