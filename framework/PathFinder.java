@@ -28,6 +28,12 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 		mTrigger = new TimerTrigger(this);
 		mTrigger.setRepeat(true);
 		_game.heartBeat.addRel ( mTrigger, 1 );
+		// give this object a director
+		//OneStepLookAheadDirector dir = new OneStepLookAheadDirector();
+		PathFinderDirector dir = new PathFinderDirector();
+		mDirector = dir;
+		// notify the director of object events
+		addObjectListener(dir);
 	}
 
 	/** Creates a new instance of PathFinder */
@@ -70,18 +76,17 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 	
 	public void setPosition(FloatPoint _pos) {
 		super.setPosition(_pos);
-		if (mGame != null) {
-			Point point = getPosition().toPoint();
+		FloatPoint newpos = getPosition();
+		if ((mGame != null) && (newpos != null)) {
+			Point point = newpos.toPoint();
 			Parcel aNewParcel = mGame.getMap().getParcel(point.x, point.y);
 			if (aNewParcel.getTerrain() instanceof WaterTerrain) {
 				// can't live in water, handle object 'death'
 				log("died in water");
-				// tell of the death to the director so it can update it's cost map
-				mDirector.onObjectDied(_pos, mGame.getMap());
 				// remove object from universe
 				mGame.heartBeat.remove(mTrigger);
 				// remove object from map (call super to avoid NPE)
-				super.setPosition(null);
+				kill();
 			}
 		}
 	}
@@ -92,7 +97,7 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 	
 }
 
-class OneStepLookAheadDirector implements Director {
+class OneStepLookAheadDirector implements Director, ObjectListener {
 	public static int[][] FLAGMAP = null;
 
 	public synchronized int[][] getFLAGMAP(GameMap _map) {
@@ -135,11 +140,13 @@ class OneStepLookAheadDirector implements Director {
 		return direction;
 	}
 	
-	// Called to indicate that the game object has died at [_pos] on [_map]
-	public void onObjectDied(FloatPoint _pos, GameMap _map) {
-		Point point = _pos.toPoint();
-		Point parcelposition = _map.gameXYToParcelXY(point.x, point.y);
-		getFLAGMAP(_map)[parcelposition.x][parcelposition.y]++;
+	// Called to indicate that the game object has died
+	public void died(ObjectEvent _e) {
+		BaseGameObject src = (BaseGameObject)_e.getSource();
+		Point point = src.getPosition().toPoint();
+		GameMap map = src.getMap();
+		Point parcelposition = map.gameXYToParcelXY(point.x, point.y);
+		getFLAGMAP(map)[parcelposition.x][parcelposition.y]++;
 	}
 
 	// determines the cost for an object at [_pos] to move in [_dir]
@@ -148,6 +155,7 @@ class OneStepLookAheadDirector implements Director {
 		Point parcelindex = _map.gameXYToParcelXY((int)dst.x, (int)dst.y);
 		return getFLAGMAP(_map)[parcelindex.x][parcelindex.y] * 1000 + _pos.distance(dst);
 	}
+	
 	public void log(String _line) {
 		Logger.log("OneStepLookAheadDirector: "+_line);
 	}
@@ -156,6 +164,11 @@ class OneStepLookAheadDirector implements Director {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: PathFinder.java,v $
+ *  Revision 1.9  2002/11/11 10:48:45  quintesse
+ *  PathFinder now uses the kill() method of the GameObject to die.
+ *  PathFinder adds the Director being used to its list of event listeners.
+ *  The OneStepLookAheadDirector now listens for the object's died() event.
+ *
  *  Revision 1.8  2002/11/10 08:18:33  puf
  *  The Director interface and PathFinderDirector implementation are now in separate files.
  *  The PathFinder now uses the PathFinderDirector for directing it's movement.
