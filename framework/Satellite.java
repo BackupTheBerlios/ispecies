@@ -1,5 +1,6 @@
 import java.io.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 
 
@@ -13,7 +14,7 @@ class Satellite
 	int					interval = 25;	// number of heartbeats between updates
 	GameMap				map;			// satellite can see entire map
 
-	Satellite( Universe _game ) 
+	Satellite( Universe _game )
 	{
 		trigger = new TimerTrigger ( this );
 		trigger.setRepeat(true);
@@ -26,7 +27,7 @@ class Satellite
 		// no universe yet
 		this(null);
 	}
-	
+
 	public void OnUniverse(Universe _universe)
 	{
 		if (game != null)
@@ -34,51 +35,47 @@ class Satellite
 		game = _universe;
 		if (game != null)
 		{
-			map = game.Map(); // can see the entire map
+			map = game.getMap(); // can see the entire map
 			game.heartBeat.addRel ( trigger, interval );
 		}
 	}
 
-	public void doTimer(TimerTrigger tt) 
+	public void doTimer(TimerTrigger tt)
 	{
 		vp.updateMap();
 	}
 }
 
 //class SatelliteViewport extends Viewport
-class SatelliteViewport extends Frame
+class SatelliteViewport extends Frame implements MouseListener, MouseMotionListener
 {
 	// member variables
 	Image			img = null; // off screen buffer
 	Graphics		bg = null;
 	Universe		game;
 	Satellite		satellite;
+	double			fScaleX, fScaleY;
 
 	// class constants
-	public final static int SCALE = 32; // size of a parcel
+	public final static int SCALE = 32; // size of a parcel in pixels
 	public final static int INSET = 5; // for 'dungeon dressing'
-	public final static int MAP_HEIGHT = 10; // num parcels, should be read from Satellite
-	public final static int MAP_WIDTH  = 10; // num parcels, should be read from Satellite
-	public final static int VIEWPORT_WIDTH = SCALE*MAP_WIDTH + 2*INSET;
-	public final static int VIEWPORT_HEIGHT = SCALE*MAP_HEIGHT + 2*INSET;
-	public final static int CENTER= INSET + (SCALE * MAP_WIDTH / 2);
 	public final static Color BG_COLOR = Color.black;
 
-	SatelliteViewport( Universe _game, Satellite _Satellite ) 
+	SatelliteViewport( Universe _game, Satellite _Satellite )
 	{
 		super("Satellite");
 		setBackground(BG_COLOR);
 		show();
 		OnUniverse  (_game);
 		OnSatellite (_Satellite);
-		// show and resize our window
-		setSize(
-			VIEWPORT_WIDTH  + insets().left + insets().right,
-			VIEWPORT_HEIGHT + insets().top  + insets().bottom
-		);
-		// create an off screen buffer for drawing
-		img = createImage(VIEWPORT_WIDTH,VIEWPORT_HEIGHT);
-		bg = img.getGraphics();
+
+		// determine the scale of things for mapping screen coordinates back to map coordinates later
+		fScaleX = (satellite.map.getWidth() / (SCALE * satellite.map.getParcelMap().getWidth()));
+		fScaleY = (satellite.map.getHeight() / (SCALE * satellite.map.getParcelMap().getHeight()));
+
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
+
 		System.out.println("SatelliteViewport created");
 	}
 	SatelliteViewport( Universe _game )
@@ -114,7 +111,7 @@ class SatelliteViewport extends Frame
 			);
 		}
 	}
-	
+
 	public void setViewportSize(int _width, int _height)
 	{
 		setSize(
@@ -124,76 +121,154 @@ class SatelliteViewport extends Frame
 		// create an off screen buffer for drawing
 		if (bg != null) bg.dispose(); // free old one
 		img = createImage(_width,_height);
+		System.err.println("Create OSB of "+_width+"x"+_height);
 		bg  = img.getGraphics();
 		System.out.println("SatelliteViewport created");
 	}
-		
 
-	void drawParcelTerrain(Graphics g, int x, int y, Terrain terrain)
+	void DrawParcelTerrain(Graphics g, int x, int y, int h, Terrain terrain)
 		// draws the terrain of a parcel
 	{
-		// draw new segment marker
-		g.setColor(terrain.color);
+		// determine color
+		//g.setColor(terrain.color);
+		Color aColor = new java.awt.Color(terrain.color.getRGB());
+		for (int i=0; i < h; i++) {
+			aColor = aColor.darker();
+		}
+		g.setColor(aColor);
+		// draw rectangle
 		g.fillRect(
 			INSET+x*SCALE,
-			INSET+y*SCALE, 
+			INSET+y*SCALE,
 			INSET+(x+1)*SCALE-1,
 			INSET+(y+1)*SCALE-1
 		);
 	}
-	void drawObject(Graphics g, float x, float y, GameObject obj)
+
+	void DrawObject(Graphics g, Point gp, GameObject obj)
 	{
+		Point sp = gameToScreenCoords(gp);
+
 		if (obj instanceof Radar) {
 			g.setColor(Color.black);
-			g.drawOval(INSET+Math.round(x*SCALE)-25,INSET+Math.round(y*SCALE)-25,50,50);
+			// REMARK: Why the 3 * parcel width/height?
+			// Because it's easy to check in the window.
+			// It shouldn't use parcel info in final version.
+			Point sw = gameToScreenVect(new Point(3 * satellite.map.mParcelWidth, 3 * satellite.map.mParcelHeight));
+			g.drawOval(sp.x - sw.x/2, sp.y - sw.y/2, sw.x, sw.y);
 		}
-			
+		if (obj instanceof Targettable) {
+			g.setColor(Color.green);
+			Point tsp = gameToScreenCoords(((Targettable)obj).getTarget());
+			g.drawLine(sp.x, sp.y, tsp.x, tsp.y);
+		}
+
 		g.setColor(Color.red);
-		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
-		g.fillOval(INSET+Math.round(x*SCALE),INSET+Math.round(y*SCALE),2,2); // putPixel
-		//g.drawLine(LEFT+x*SCALE,TOP+y*SCALE,LEFT+x*SCALE,TOP+y*SCALE);
-	}
-	public void paint(Graphics g) 
-	{
-		// simply copy the off screen buffer to the window
-		g.drawImage(img,insets().left+1,insets().top+1,null);
+		g.fillOval(sp.x-2, sp.y-2, 4, 4); // putPixel
 	}
 
-	public void updateMap() 
+	public void paint(Graphics g)
+	{
+		// simply copy the off screen buffer to the window
+		g.drawImage(img, insets().left+1, insets().top+1, null);
+	}
+
+	public void updateMap()
 	{
 		int x, y;
-		
-		for ( x=0; x < MAP_WIDTH; x++) {
-			for ( y=0; y < MAP_HEIGHT; y++) {
-				drawParcelTerrain(bg,x,y,satellite.map.getParcelMap().getParcel(x,y).getTerrain());
+
+		for ( x=0; x < satellite.map.getParcelMap().getWidth(); x++) {
+			for ( y=0; y < satellite.map.getParcelMap().getHeight(); y++) {
+				Parcel p = satellite.map.getParcelMap().getParcel(x,y);
+				DrawParcelTerrain( bg, x, y, p.getBaseHeight(), p.getTerrain() );
+				// TODO: write XY
 			} // for y
 		} // for x
-		for (x=0; x < MAP_WIDTH; x++) {
-			for (y=0; y < MAP_HEIGHT; y++) {
-				bg.setColor(Color.cyan);
-				bg.drawString( 
-					Integer.toString(satellite.map.getParcelMap().getParcel(x,y).mObjectStack.size()),
-					INSET+Math.round(x*SCALE + SCALE/2),
-					INSET+Math.round(y*SCALE + SCALE/2)
-				);
-				for (Enumeration e = satellite.map.getParcelMap().getParcel(x,y).objects(); e.hasMoreElements(); ) {
-					GameObject obj = (GameObject)e.nextElement();
-					drawObject(
-						bg,
-						(float)obj.getPosition().x / satellite.map.mParcelWidth,
-						(float)obj.getPosition().y / satellite.map.mParcelHeight,
-						obj
-					);
-				} // for objects
-			} // for y
-		} // for x
+
+		for (Enumeration e = satellite.map.getRange().getObjectEnumeration(); e.hasMoreElements(); ) {
+			GameObject obj = (GameObject)e.nextElement();
+			DrawObject(
+				bg,
+				obj.getPosition(),
+				obj
+			);
+		} // for objects
 		// update screen
 		repaint();
 	}
+
 	public void update(Graphics  g)
 	{
 		paint(g);
 	}
+
+	public Point screenToGameVect(Point p) {
+		Point tp = new Point(p);
+		tp.x = (int)(tp.x * fScaleX);
+		tp.y = (int)(tp.y * fScaleY);
+		return tp;
+	}
+
+	public Point gameToScreenVect(Point p) {
+		Point tp = new Point(p);
+		tp.x = (int)(tp.x / fScaleX);
+		tp.y = (int)(tp.y / fScaleY);
+		return tp;
+	}
+
+	public Point mouseToScreenCoords(Point p) {
+		Point tp = new Point(p);
+		Insets i = getInsets();
+		tp.translate(-i.left, -i.top);
+		return tp;
+	}
+
+	public Point screenToGameCoords(Point p) {
+		Point tp = new Point(p);
+		tp.translate(-INSET, -INSET);
+		tp.x = (int)(tp.x * fScaleX);
+		tp.y = (int)(tp.y * fScaleY);
+		return tp;
+	}
+
+	public Point gameToScreenCoords(Point p) {
+		Point tp = new Point(p);
+		tp.x = (int)(tp.x / fScaleX);
+		tp.y = (int)(tp.y / fScaleY);
+		tp.translate(INSET, INSET);
+		return tp;
+	}
+
+	public void mouseClicked(MouseEvent event) {
+	}
+
+	public void mousePressed(MouseEvent event) {
+		Point p = screenToGameCoords(mouseToScreenCoords(event.getPoint()));
+		Point pp = satellite.map.gameXYToParcelXY(p.x, p.y);
+System.out.println("MousePressed " + p + pp);
+		MapView v = satellite.map.getRange(p, 32, 32);
+		for (Enumeration e = v.getObjectEnumeration(); e.hasMoreElements(); ) {
+			GameObject obj = (GameObject)e.nextElement();
+System.out.println(obj);
+			if (obj instanceof Targettable) {
+				Targettable to = (Targettable)obj;
+System.out.println("target = "+to.getTarget());
+			}
+		}
+	}
+
+	public void mouseReleased(MouseEvent event) {
+	}
+
+	public void mouseEntered(MouseEvent event) {
+	}
+
+	public void mouseExited(MouseEvent event) {
+	}
+
+	public void mouseMoved(MouseEvent event) {
+	}
+
+	public void mouseDragged(MouseEvent event) {
+	}
 }
-
-
