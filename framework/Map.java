@@ -9,34 +9,34 @@ class Vector3D {
 	protected double mx;
 	protected double my;
 	protected double mz;
-
+	
 	Vector3D(double _x, double _y, double _z) {
 		mx = _x;
 		my = _y;
 		mz = _z;
 	}
-
+	
 	public Vector3D add(Vector3D v) {
 		mx += v.mx;
 		my += v.my;
 		mz += v.mz;
 		return this;
 	}
-
+	
 	public Vector3D substract(Vector3D v) {
 		mx -= v.mx;
 		my -= v.my;
 		mz -= v.mz;
 		return this;
 	}
-
+	
 	public Vector3D multiply(double f) {
 		mx *= f;
 		my *= f;
 		mz *= f;
 		return this;
 	}
-
+	
 	public double dot(Vector3D v) {
 		double nRes = mx * v.mx;
 		nRes += my * v.my;
@@ -47,47 +47,34 @@ class Vector3D {
 
 
 class Parcel {
-
+	
 	protected Terrain m_terrain;
 	protected int m_nHeight;
 	
 	protected Vector mObjectStack;
-
-	Parcel()
-	{
+	
+	Parcel() {
 		mObjectStack = new Vector();
 	}
-
+	
 	public void addObject(GameObject gobject) {
 		mObjectStack.addElement(gobject);
 	}
-
-	public void placeObject(GameObject gobject) {
-		addObject(gobject);
-		gobject.setParcel(this);
-	}
-
-	public void moveObject(GameObject gobject, Parcel newparcel) {
-		if (newparcel != this) {
-			removeObject(gobject);
-			newparcel.placeObject(gobject);
-		}
-	}
-
+	
 	public void removeObject(GameObject gobject) {
 		mObjectStack.removeElement(gobject);
 		//gobject.setParcel(null);
 	}
-
+	
 	public Enumeration objects() {
 		return mObjectStack.elements();
 	}
-
+	
 	public Terrain getTerrain() {
 		return m_terrain;
 	}
 	
-	public void setTerrain (Terrain _terrain) {
+	public void setTerrain(Terrain _terrain) {
 		m_terrain = _terrain;
 	}
 	
@@ -105,9 +92,8 @@ class ParcelMap {
 	protected Parcel mvParcels[][];
 	protected int mMapWidth;
 	protected int mMapHeight;
-
-	ParcelMap(int _mapWidth, int _mapHeight) 
-	{
+	
+	ParcelMap(int _mapWidth, int _mapHeight) {
 		mMapWidth = _mapWidth;
 		mMapHeight = _mapHeight;
 		mvParcels = new Parcel[_mapWidth][_mapHeight];
@@ -119,11 +105,11 @@ class ParcelMap {
 	public int getWidth() {
 		return mMapWidth;
 	}
-
+	
 	public int getHeight() {
 		return mMapHeight;
 	}
-
+	
 	public Parcel getParcel(int posX, int posY) {
 		if ((posX >=0) && (posX < mMapWidth) && (posY >= 0) && (posY <= mMapHeight))
 			return mvParcels[posX][posY];
@@ -134,9 +120,9 @@ class ParcelMap {
 
 
 class HeightMap {
-
+	
 	protected int mvnHeights[][];
-
+	
 	// Returns the height of the given point.
 	// Positions between (0.0, 0.0) - (1.0, 1.0)
 	// are within Parcel.
@@ -144,7 +130,7 @@ class HeightMap {
 		// TODO: Intersection calculations
 		return 0.0;
 	}
-
+	
 	// Stupid name
 	// Returns the vector of the direction an object
 	// would slide in when left the the effects of gravity.
@@ -164,9 +150,11 @@ interface Map {
 	MapView getRange();
 	MapView getRange(Point _center, int _width, int _height);
 	MapView getRange(int _centerX, int _centerY, int _width, int _height);
+	void moveObject(GameObject _obj, Point _from, Point _to);
 	Point getCenter();
 	long getWidth();
 	long getHeight();
+	
 }
 
 
@@ -180,7 +168,7 @@ class GameMap implements Map {
 	protected int mParcelHeight;	// Height of a Parcel in game units
 	protected int mParcelMapWidth;	// Width of map in Parcels
 	protected int mParcelMapHeight;	// Height of map in Parcels
-
+	
 	GameMap(long _width, long _height, int _parcelWidth, int _parcelHeight) {
 		mMapWidth = _width;
 		mMapHeight = _height;
@@ -191,10 +179,10 @@ class GameMap implements Map {
 		mParcelMapHeight = (int)(mMapHeight / mParcelHeight);
 		mParcelMap = new ParcelMap(mParcelMapWidth, mParcelMapHeight);
 	}
-
+	
 	// Width of map in game units
 	public long getWidth() { return mMapWidth; }
-
+	
 	// Height of map in game units
 	public long getHeight()	{ return mMapHeight; }
 	
@@ -203,11 +191,11 @@ class GameMap implements Map {
 	public HeightMap getHeightMap() {
 		return mHeightMap;
 	}
-
+	
 	public ParcelMap getParcelMap() {
 		return mParcelMap;
 	}
-
+	
 	public Point gameXYToParcelXY(long _posX, long _posY) {
 		// Go from game coordinates to map coordinates
 		Point p = new Point(
@@ -226,7 +214,11 @@ class GameMap implements Map {
 		else
 			return null;
 	}
-
+	
+	protected Parcel getParcel(Point _pos) {
+		return getParcel(_pos.x, _pos.y);
+	}
+	
 	public Point getParcelPosition(Parcel _parcel) {
 		for (int x=0; x < mParcelMapWidth; x++) {
 			for (int y=0; y < mParcelMapHeight; y++) {
@@ -243,13 +235,32 @@ class GameMap implements Map {
 		long cY = mMapHeight / 2;
 		return new MapView(this, cX, cY, mMapWidth, mMapHeight);
 	}
-
+	
 	public MapView getRange(Point _center, int _width, int _height) {
 		return new MapView(this, _center, _width, _height);
 	}
-
+	
 	public MapView getRange(int _centerX, int _centerY, int _width, int _height) {
 		return new MapView(this, _centerX, _centerY, _width, _height);
+	}
+
+	public void moveObject(GameObject _obj, Point _from, Point _to) {
+		Parcel fromParcel =  (_from != null) ? getParcel( _from.x, _from.y ) : null;
+		Parcel toParcel = (_to != null) ? getParcel( _to.x, _to.y ) : null;
+		if (fromParcel != toParcel) {
+			// TODO: invalidate fromParcel and toParcel to reduce drawing
+			{
+				String sFrom = (fromParcel != null) ? fromParcel+" ("+fromParcel.getTerrain().getClass().getName()+")" : "<nowhere>" ;
+				String sTo = (toParcel != null) ? toParcel+" ("+toParcel.getTerrain().getClass().getName()+")" : "<nowhere>" ;
+				System.out.println("Moving '"+_obj.getName()+"' from "+sFrom+" to "+sTo);
+			}
+			if (fromParcel != null) {
+				fromParcel.removeObject(_obj);
+			}
+			if (toParcel != null) {
+				toParcel.addObject(_obj);
+			}
+		}
 	}
 }
 
@@ -258,63 +269,65 @@ class MapView implements Map {
 	protected Map mMap;
 	protected Point mCenter, mOffset;
 	protected long mMapWidth, mMapHeight;
-
+	
 	MapView(Map _map, long _centerX, long _centerY, long _width, long _height) {
 		mMap = _map;
 		mCenter = new Point((int)_centerX, (int)_centerY);
 		Point mapcent = _map.getCenter();
 		mOffset = new Point(
-			(int)((_centerX - _width/2) - (mapcent.x - _map.getWidth()/2)),
-			(int)((_centerY - _height/2) - (mapcent.y - _map.getHeight()/2))
+		(int)((_centerX - _width/2) - (mapcent.x - _map.getWidth()/2)),
+		(int)((_centerY - _height/2) - (mapcent.y - _map.getHeight()/2))
 		);
 		mMapWidth = _width;
 		mMapHeight = _height;
 	}
-
+	
 	MapView(Map _map, Point _center, long _width, long _height) {
 		this(_map, _center.x, _center.y, _width, _height);
 	}
 	
 	// Width of map in game units
 	public long getWidth() { return mMapWidth; }
-
+	
 	// Height of map in game units
 	public long getHeight()	{ return mMapHeight; }
 	
 	public Point getCenter() { return mCenter; }
-
+	
 	public void setCenter(long _centerX, long _centerY) {
 		mCenter = new Point((int)_centerX, (int)_centerY);
 	}
-
+	
 	public void move(int _dX, int _dY) {
 		mCenter.translate(_dX, _dY);
 	}
-
+	
 	// Return a default Parcel enumerator
 	public ParcelEnumeration getParcelEnumeration() {
 		int mode = ParcelEnumeration.LEFT_RIGHT
-				| ParcelEnumeration.TOP_DOWN
-				| ParcelEnumeration.HORIZONTAL_FIRST;
+			| ParcelEnumeration.TOP_DOWN
+			| ParcelEnumeration.HORIZONTAL_FIRST
+		;
 		return new ParcelEnumeration(this, mode);
 	}
-
+	
 	// Return a default GameObject enumerator
 	public ObjectEnumeration getObjectEnumeration() {
 		int mode = ObjectEnumeration.LEFT_RIGHT
-				| ObjectEnumeration.TOP_DOWN
-				| ObjectEnumeration.HORIZONTAL_FIRST;
+			| ObjectEnumeration.TOP_DOWN
+			| ObjectEnumeration.HORIZONTAL_FIRST
+		;
 		return new ObjectEnumeration(this, mode);
 	}
-
+	
 	public HeightMap getHeightMap() {
 		return mMap.getHeightMap();
 	}
-
+	
 	public ParcelMap getParcelMap() {
 		return mMap.getParcelMap();
 	}
-
+	
 	public Point gameXYToParcelXY(long _posX, long _posY) {
 		/* TODO: This is where the enumerations go wrong !!!! The subview isn't placed properly within its parent */
 		return mMap.gameXYToParcelXY(
@@ -326,7 +339,7 @@ class MapView implements Map {
 	public Parcel getParcel(long _posX, long _posY) {
 		return mMap.getParcel(_posX, _posY);
 	}
-
+	
 	public Point getParcelPosition(Parcel _parcel) {
 		return mMap.getParcelPosition(_parcel);
 	}
@@ -334,13 +347,32 @@ class MapView implements Map {
 	public MapView getRange() {
 		return new MapView(this, mCenter.x, mCenter.y, mMapWidth, mMapHeight);
 	}
-
+	
 	public MapView getRange(Point _center, int _width, int _height) {
 		return new MapView(this, _center.x, _center.y, _width, _height);
 	}
-
+	
 	public MapView getRange(int _centerX, int _centerY, int _width, int _height) {
 		return new MapView(this, _centerX, _centerY, _width, _height);
+	}
+	
+	public void moveObject(GameObject _obj, Point _from, Point _to) {
+		Parcel fromParcel =  (_from != null) ? getParcel( _from.x, _from.y ) : null;
+		Parcel toParcel = (_to != null) ? getParcel( _to.x, _to.y ) : null;
+		if (fromParcel != toParcel) {
+			// TODO: invalidate fromParcel and toParcel to reduce drawing
+			{
+				String sFrom = (fromParcel != null) ? fromParcel+" ("+fromParcel.getTerrain().getClass().getName()+")" : "<nowhere>" ;
+				String sTo = (toParcel != null) ? toParcel+" ("+toParcel.getTerrain().getClass().getName()+")" : "<nowhere>" ;
+				System.out.println("Moving '"+_obj.getName()+"' from "+sFrom+" to "+sTo);
+			}
+			if (fromParcel != null) {
+				fromParcel.removeObject(_obj);
+			}
+			if (toParcel != null) {
+				toParcel.addObject(_obj);
+			}
+		}
 	}
 }
 
@@ -363,14 +395,14 @@ class ParcelEnumeration implements Enumeration {
 	ParcelEnumeration(MapView _mapv, int _mode) {
 		mMapv = _mapv;
 		mMode = _mode;
-
+		
 		mPMap = mMapv.getParcelMap();
 		
 		// Get the top-left and bottom-right corners of the MapView's range
 		// in ParcelMap coordinates.
 		mStart = mMapv.gameXYToParcelXY(0, 0);
 		mEnd = mMapv.gameXYToParcelXY(mMapv.mMapWidth-1, mMapv.mMapHeight-1);
-
+		
 		// Make sure we don't enumerate outside the boundaries of the ParcelMap.
 		if (mStart.x < 0) mStart.x = 0;
 		if (mStart.y < 0) mStart.y = 0;
@@ -388,7 +420,7 @@ class ParcelEnumeration implements Enumeration {
 			mCurX = mEnd.x;
 			mDX = -1;
 		}
-
+		
 		if ((mMode & DOWN_TOP) == 0) {
 			mCurY = mStart.y;
 			mDY = 1;
@@ -397,7 +429,7 @@ class ParcelEnumeration implements Enumeration {
 			mDY = -1;
 		}
 	}
-
+	
 	public boolean hasMoreElements() {
 		boolean bMore;
 		
@@ -406,16 +438,16 @@ class ParcelEnumeration implements Enumeration {
 		} else {
 			bMore = (mCurX >= mStart.x);
 		}
-
+		
 		if ((mMode & DOWN_TOP) == 0) {
 			bMore = bMore && (mCurY <= mEnd.y);
 		} else {
 			bMore = bMore && (mCurY >= mStart.y);
 		}
-
+		
 		return bMore;
 	}
-
+	
 	public Object nextElement() {
 		Parcel parcel = mPMap.getParcel(mCurX, mCurY);
 		if ((mMode & VERTICAL_FIRST) == 0) {
@@ -447,7 +479,7 @@ class ParcelEnumeration implements Enumeration {
 class ObjectEnumeration implements Enumeration {
 	Vector mObjects;
 	Enumeration mObjWalk;
-
+	
 	public static final int LEFT_RIGHT = 0;
 	public static final int RIGHT_LEFT = 1;
 	public static final int TOP_DOWN = 0;
@@ -471,11 +503,11 @@ class ObjectEnumeration implements Enumeration {
 		}
 		mObjWalk = mObjects.elements();
 	}
-
+	
 	public boolean hasMoreElements() {
 		return mObjWalk.hasMoreElements();
 	}
-
+	
 	public Object nextElement() {
 		return mObjWalk.nextElement();
 	}
