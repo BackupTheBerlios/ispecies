@@ -2,243 +2,178 @@ import java.io.*;
 import java.awt.*;
 import java.util.*;
 
+import util.*;
 
-class Radar extends BaseGameObject
-	implements TimerReceiver
-// this class represents a radar on the map
-{
-	Universe		game;
-	RadarViewport	vp; // should be a vector, to handle multiple views on this radar
-	TimerTrigger	trigger;
-	int interval = 4;		// number of heartbeats between updates
-	int	angle = 0;			// start angle of next segment
-	int segment = 5;		// size of segment
-	MapView map;			// map range of radar
+/**
+ *  Visualizes the Radar model
+ *
+ *@author     Tako
+ *@created    6 november 2002
+ */
+public class RadarViewport extends Viewport {
+	Radar mRadar;
+	int mnLastAngle = 0; // last angle received (= last line drawn)
+	long mlLastTime;
+	Dimension mPreferredSize;
 
-	public final static int RADIUS = 50; // 100x100 game units
+	/**
+	 *  The relation between game units and pixels
+	 */
+	public final static float PREFERRED_SCALE = 2.0f;
 
-	Radar( Universe _game )
-	{
-		super (_game.getMap(),
-			new Point(
-				(int)(Math.random()*_game.map.getWidth()),
-				(int)(Math.random()*_game.map.getHeight())
-			)
-		);
-		trigger = new TimerTrigger ( this );
-		trigger.setRepeat(true);
-		OnUniverse(_game);
-	}
-
-	Radar ()
-	{
-		// no universe yet
-		this(null);
-	}
-
-	public void OnUniverse(Universe _universe)
-	{
-		if (game != null)
-			game.heartBeat.remove(trigger);
-		game = _universe;
-		if (game != null)
-		{
-			game.heartBeat.addRel ( trigger, interval );
-			map = game.getMap().getRange(getPosition().toPoint().x, getPosition().toPoint().y, 2*RADIUS, 2*RADIUS);
-		}
-	}
-
-	public void doTimer(TimerTrigger tt)
-	{
-		int			tmpAngle,
-					distance,
-					dx, dy;
-		GameObject	object;
-		Polygon		pol;
-
-		// alternative ObjectInsideSegment algorithm
-		// create a polygon approximation of the segment
-		pol = new Polygon();
-		pol.addPoint(getPosition().toPoint().x, getPosition().toPoint().y);
-		pol.addPoint(
-			getPosition().toPoint().x + (int)(RADIUS * Math.cos( angle * Math.PI / 180 )),
-			getPosition().toPoint().y - (int)(RADIUS * Math.sin( angle * Math.PI / 180 ))
-		);
-		tmpAngle = angle+segment; // may be >360 but that's ok
-		pol.addPoint(
-			getPosition().toPoint().x + (int)(RADIUS * Math.cos( tmpAngle * Math.PI / 180 )),
-			getPosition().toPoint().y - (int)(RADIUS * Math.sin( tmpAngle * Math.PI / 180 )) 
-		);
-		//pol.addPoint(center.x,center.y); // closing point
-		// the above is an approximation of a pie slice. the circular
-		// part of the slice is not included in the polygon.
-
-		// for every GObject
-		for (Enumeration e = map.getObjectEnumeration(); e.hasMoreElements();)
-		{
-			object = (GameObject)e.nextElement();
-			// is it inside the segment?
-			//if (pol.inside(object.getPosition().x, object.getPosition().y))
-			//if (pol.contains(object.getPosition().x, object.getPosition().y))
-				// Is it metal?
-				//if (object instanceof RadarVisible)
-					vp.doDrawObject(this, object.getPosition().toPoint().x - getPosition().toPoint().x, object.getPosition().toPoint().y - getPosition().toPoint().y, 1);
-					// vp.doDrawObject(this, object.getPosition().x, object.getPosition().y, ((RadarVisible)object).getReflectivity())
-		}
-
-		vp.doDrawSegment(this, angle, segment, pol);
-
-		// increment angle
-		angle = angle + segment;
-		if (angle >= 360)
-			angle = angle - 360;
-	}
-}
-
-//class RadarViewport extends Viewport
-class RadarViewport extends Frame
-{
-	// member variables
-	Image			img = null; // off screen buffer
-	Graphics		bg = null;
-	int				angle = 0; // last angle received (= last line drawn)
-	Image			dot = null;
-	Universe		game;
-	Radar			radar;
-
-	// class constants
-	public final static int RADIUS = 50; // 100x100 game units
-	public final static int SCALE = 2; // 200x200 pixels
-	public final static int INSET = 5; // for 'dungeon dressing'
-	public final static int VIEWPORT_SIZE = SCALE*RADIUS*2 + 2*INSET;
-	public final static int LEFT  = INSET;
-	public final static int TOP   = INSET;
-	public final static int WIDTH = RADIUS*2*SCALE;
-	public final static int HEIGHT= RADIUS*2*SCALE;
-	public final static int CENTER= INSET + RADIUS*SCALE;
-
+	/**
+	 *  The color to draw with
+	 */
 	public final static Color COLOR = Color.green;
+	/**
+	 *  The background color
+	 */
 	public final static Color BG_COLOR = Color.black;
 
-	long lastTime;
 
-	RadarViewport( Universe _game, Radar _radar )
-	{
-		super("Radar");
-		OnUniverse(_game);
-		OnRadar   (_radar);
-		// show and resize our window
-		setBackground(BG_COLOR);
-		show();
-		//resize(VIEWPORT_SIZE+insets().left+insets().right,VIEWPORT_SIZE+insets().top+insets().bottom);
-		setSize(VIEWPORT_SIZE+insets().left+insets().right,VIEWPORT_SIZE+insets().top+insets().bottom);
-		// create an off screen buffer for drawing
-		img = createImage(VIEWPORT_SIZE,VIEWPORT_SIZE);
-		bg = img.getGraphics();
-		DrawOutline(bg);
-		// start loading of the 'dot'
-		dot = _game.rm.getImage(_game.IMG_DOT);
-		lastTime = System.currentTimeMillis();
+	/**
+	 *  Constructor for the RadarViewport object
+	 *
+	 *@param  _radar      A reference to the radar model to be visualized
+	 *@param  _container  A reference to the container this view port is part of
+	 */
+	RadarViewport(Radar _radar, ViewportContainer _container) {
+		super();
+		setRadar(_radar);
+		setContainer(_container);
+		mlLastTime = System.currentTimeMillis();
+		Logger.log("RadarViewport created");
 	}
 
-	RadarViewport( Universe _game )
-	{
-		this (_game,null);
+
+	/**
+	 *  Constructor for the RadarViewport object
+	 *
+	 *@param  _radar  A reference to the radar model to be visualized
+	 */
+	RadarViewport(Radar _radar) {
+		this(_radar, null);
 	}
 
-	RadarViewport ()
-	{
-		this(null,null);
+
+	/**
+	 *  Constructor for the RadarViewport object
+	 */
+	RadarViewport() {
+		this(null, null);
 	}
 
-	protected void finalize()
-	{
-		bg.dispose(); // dispose of the Graphics
+
+	public void terminate() {
+		super.terminate();
+		mRadar.terminate();
 	}
 
-	public void OnUniverse(Universe _universe)
-	{
-		game = _universe;
-	}
 
-	public void OnRadar(Radar _radar)
-	{
-		if (radar != null)
-		{	// disconnect from old radar
-			radar.vp = null;
+	/**
+	 *  Sets the radar attribute of the RadarViewport object
+	 *
+	 *@param  _radar  The new radar value
+	 */
+	public void setRadar(Radar _radar) {
+		mRadar = _radar;
+		if (mRadar != null) {
+			mPreferredSize = new Dimension(
+					2 * (int)(PREFERRED_SCALE * mRadar.getRadius()),
+					2 * (int)(PREFERRED_SCALE * mRadar.getRadius())
+			);
+		} else {
+			mPreferredSize = null;
 		}
-		radar = _radar;
-		if (radar != null)
-		{	// connect to new radar
-			radar.vp = this;
+	}
+
+
+	/**
+	 *  Returns the preferred size of the Radar Viewport
+	 *
+	 *@return    A Dimension with the preferred size
+	 */
+	public Dimension getPreferredSize() {
+		return mPreferredSize;
+	}
+
+
+	/**
+	 *  Draws the outline (box and circle) of the radar
+	 *
+	 *@param  _g  Graphics context to draw in
+	 */
+	void drawOutline(Graphics _g) { // draws the (constant) outline of the radar
+		_g.setColor(COLOR);
+		_g.drawRect(0, 0, _g.getClipBounds().width - 1, _g.getClipBounds().height - 1); // bounding box
+		_g.drawOval(0, 0, _g.getClipBounds().width - 1, _g.getClipBounds().height - 1); // radar outline
+	}
+
+
+	/**
+	 *  Draws the rotating line indicating where the radar is pointing to
+	 *
+	 *@param  _g      Graphics context to draw in
+	 *@param  _start  The angle of the line
+	 *@param  _arc    The amount the line has moved since the last time (pos = CCW, neg = CW)
+	 */
+	void drawSegment(Graphics _g, int _start, int _arc) { // draws a segment of the radar
+		_g.setColor(COLOR);
+		int x = _g.getClipBounds().width / 2;
+		int y = _g.getClipBounds().height / 2;
+		Scale s = getScale();
+		_g.drawLine(
+				x,
+				y,
+				x + (int)(PREFERRED_SCALE * s.x * mRadar.getRadius() * Math.cos(_start * Math.PI / 180)),
+				y - (int)(PREFERRED_SCALE * s.y * mRadar.getRadius() * Math.sin(_start * Math.PI / 180))
+		);
+	}
+
+
+	/**
+	 *  Draw a game object as a "blip" on the radar
+	 *
+	 *@param  _g     Graphics context to draw in
+	 *@param  _gp    Position of the GameObject to draw
+	 *@param  _size  Size of the "blip"
+	 */
+	void drawObject(Graphics _g, Point _gp, int _size) {
+		Point sp = gameToScreenCoords(_gp);
+		_g.setColor(COLOR);
+		_g.fillOval(sp.x-(_size/2), sp.y-(_size/2), _size, _size);
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  _g  Description of the Parameter
+	 */
+	public void paint(Graphics _g) {
+		_g.setColor(BG_COLOR);
+		_g.fillRect(0, 0, _g.getClipBounds().width, _g.getClipBounds().height);
+		drawOutline(_g);
+		// for every GameObject within the radar's bounding box
+		for (Enumeration e = mRadar.getMap().getObjectEnumeration(); e.hasMoreElements();) {
+Logger.log("############");
+			GameObject object = (GameObject)e.nextElement();
+			FloatPoint p = new FloatPoint(object.getPosition());
+			p.x -= mRadar.getPosition().x;
+			p.y -= mRadar.getPosition().y;
+			drawObject(_g, p.toPoint(), 2);
 		}
-	}
-
-	void DrawOutline(Graphics g)
-		// draws the (constant) outline of the radar
-	{
-		//Graphics bg = img.getGraphics();
-		g.setColor(COLOR);
-		g.drawRect(0,0,VIEWPORT_SIZE-1,VIEWPORT_SIZE-1); // bounding box
-		g.drawOval(0,0,VIEWPORT_SIZE-1,VIEWPORT_SIZE-1); // radar outline
-		//bg.fillOval(CENTER-2,CENTER-2,4,4); // center
-		//bg.dispose();
-	}
-
-	void DrawSegment(Graphics g, int start, int arc)
-		// draws a segment of the radar
-	{
-		//Graphics bg = img.getGraphics();
-		// delete old segment marker
-		g.setColor(BG_COLOR);
-		g.drawLine(CENTER,CENTER, CENTER+(int)(2*RADIUS*Math.cos(angle*Math.PI/180)), CENTER-(int)(2*RADIUS*Math.sin(angle*Math.PI/180)));
-		// delete previous contents
-		g.fillArc(LEFT,TOP,WIDTH,HEIGHT,start,arc+1);
-		// draw new segment marker
-		g.setColor(COLOR);
-		angle = start+arc+1;
-		g.drawLine(
-			CENTER,
-			CENTER,
-			CENTER+(int)(2*RADIUS*Math.cos(angle*Math.PI/180)),
-			CENTER-(int)(2*RADIUS*Math.sin(angle*Math.PI/180)));
-	}
-
-	void DrawObject(Graphics g, int x, int y, int size)
-	{
-		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
-		//Logger.log("object drawn");
-		//g.drawOval(LEFT+x*SCALE,TOP+y*SCALE,size,size); // putPixel
-		g.drawLine(LEFT+x*SCALE,TOP+y*SCALE,LEFT+x*SCALE,TOP+y*SCALE);
-	}
-
-	public void paint(Graphics g)
-	{
-		// simply copy the off screen buffer to the window
-		g.drawImage(img,insets().left+1,insets().top+1,null);
-	}
-
-	public void doDrawSegment(Radar _radar, int _start, int _arc, Polygon _pol) {
-		DrawSegment(bg, _start, _arc);
-
-		bg.drawPolygon(_pol);
-
-		repaint();
-	}
-
-	public void doDrawObject(Radar _radar, int _x, int _y, int _size) {
-		DrawObject(bg, _x, _y, _size);
-	}
-
-	public void update(Graphics  g)
-	{
-		paint(g);
+		drawSegment(_g, mRadar.getAngle(), mRadar.getRotationSpeed());
 	}
 }
 
 /*
  *  Revision history, maintained by CVS.
  *  $Log: RadarViewport.java,v $
+ *  Revision 1.6  2002/11/07 01:07:22  quintesse
+ *  Lots of changes because of the new Viewport/ViewportContainer system and because of a clearer separation into a MVC architecture.
+ *  The radar model has moved to its own file.
+ *
  *  Revision 1.5  2002/11/05 15:27:21  quintesse
  *  Using Logger.log() instead of System.out.writeln();
  *  Added CVS history section.
