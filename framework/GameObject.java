@@ -1,25 +1,22 @@
-
-import java.awt.Point;
-
 // Game object. Has behaviour. Does not know how to draw
 // itself, but has a reference to a Visual;
 interface GameObject {
-	Point getPosition();
-	void  setPosition(Point _position);
+	FloatPoint getPosition();
+	void  setPosition(FloatPoint _position);
 	void setName(String _name);
 	String getName();
 }
 
 class BaseGameObject implements GameObject {
 	GameMap mMap;
-	Point mPosition;
+	FloatPoint mPosition;
 	String mName;
 
-	BaseGameObject(GameMap _map, Point _position) {
+	BaseGameObject(GameMap _map, java.awt.Point _position) {
 		this( _map, _position.x, _position.y );
 	}
 	
-	BaseGameObject(String _name, GameMap _map, Point _position) {
+	BaseGameObject(String _name, GameMap _map, java.awt.Point _position) {
 		this(_name, _map, _position.x, _position.y );
 	}
 	
@@ -30,15 +27,15 @@ class BaseGameObject implements GameObject {
 	BaseGameObject(String _name, GameMap _map, int x, int y) {
 		mName = _name;
 		mMap = _map;
-		mPosition = new Point(x, y);
+		mPosition = new FloatPoint(x, y);
 		setPosition(mPosition);
 	}
 	
-	public Point getPosition() {
+	public FloatPoint getPosition() {
 		return mPosition;
 	}
 	
-	public void setPosition(Point _position) {
+	public void setPosition(FloatPoint _position) {
 		mMap.moveObject(this, getPosition(), _position);
 		//mPosition.move(_position.x, _position.y);
 		mPosition = _position;
@@ -68,8 +65,8 @@ class GameObjectDecorator
 	GameObject base;
 
 	GameObjectDecorator(GameObject _base) { base = _base; }
-	public Point getPosition(){ return base.getPosition(); }
-	public void  setPosition(Point _position) { base.setPosition(_position); }
+	public FloatPoint getPosition(){ return base.getPosition(); }
+	public void  setPosition(FloatPoint _position) { base.setPosition(_position); }
 	public void setName(String _name) { base.setName(_name); }
 	public String getName() { return base.getName(); }
 }
@@ -80,7 +77,7 @@ class RandomGameObjectMover extends GameObjectDecorator
 	int interval = 4;
 	int speed = 1;
 	TimerTrigger trigger;
-	Point direction;
+	java.awt.Point direction;
 	Universe game;
 
 	RandomGameObjectMover(GameObject _base, Universe _game, int _interval)
@@ -89,7 +86,7 @@ class RandomGameObjectMover extends GameObjectDecorator
 		game = _game;
 		interval = _interval;
 		speed = (int)(Math.random() * 3) + 1;
-		direction = new Point(speed, speed);
+		direction = new java.awt.Point(speed, speed);
 		// add to heartbeat
 		trigger = new TimerTrigger(this);
 		trigger.setRepeat(true);
@@ -127,7 +124,7 @@ class RandomGameObjectMover extends GameObjectDecorator
 		}
 		if (Math.random() < 0.50)
 		{
-			Point pos = new Point(base.getPosition());
+			FloatPoint pos = new FloatPoint(base.getPosition());
 			pos.x += direction.x;
 			if (pos.x < 0)
 				pos.x = 0;
