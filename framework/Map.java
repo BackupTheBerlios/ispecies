@@ -144,13 +144,15 @@ class HeightMap {
 interface Map {
 	HeightMap getHeightMap();
 	ParcelMap getParcelMap();
-	Point gameXYToParcelXY(long _posX, long _posY);
+	Point gameXYToParcelXY(double _posX, double _posY);
 	Parcel getParcel(long _posX, long _posY);
+	Parcel getParcel(Point _pos);
+	Parcel getParcel(FloatPoint _pos);
 	Point getParcelPosition(Parcel _parcel);
 	MapView getRange();
 	MapView getRange(Point _center, int _width, int _height);
 	MapView getRange(int _centerX, int _centerY, int _width, int _height);
-	void moveObject(GameObject _obj, Point _from, Point _to);
+	void moveObject(GameObject _obj, FloatPoint _from, FloatPoint _to);
 	Point getCenter();
 	long getWidth();
 	long getHeight();
@@ -196,7 +198,7 @@ class GameMap implements Map {
 		return mParcelMap;
 	}
 	
-	public Point gameXYToParcelXY(long _posX, long _posY) {
+	public Point gameXYToParcelXY(double _posX, double _posY) {
 		// Go from game coordinates to map coordinates
 		Point p = new Point(
 			(int)(_posX / mParcelWidth),
@@ -215,8 +217,12 @@ class GameMap implements Map {
 			return null;
 	}
 	
-	protected Parcel getParcel(Point _pos) {
-		return getParcel(_pos.x, _pos.y);
+	public Parcel getParcel(Point _pos) {
+		return _pos != null ? getParcel(_pos.x, _pos.y) : null;
+	}
+	
+	public Parcel getParcel(FloatPoint _pos) {
+		return _pos != null ? getParcel(_pos.toPoint()) : null;
 	}
 	
 	public Point getParcelPosition(Parcel _parcel) {
@@ -244,9 +250,9 @@ class GameMap implements Map {
 		return new MapView(this, _centerX, _centerY, _width, _height);
 	}
 
-	public void moveObject(GameObject _obj, Point _from, Point _to) {
-		Parcel fromParcel =  (_from != null) ? getParcel( _from.x, _from.y ) : null;
-		Parcel toParcel = (_to != null) ? getParcel( _to.x, _to.y ) : null;
+	public void moveObject(GameObject _obj, FloatPoint _from, FloatPoint _to) {
+		Parcel fromParcel =  getParcel(_from);
+		Parcel toParcel = getParcel(_to);
 		if (fromParcel != toParcel) {
 			// TODO: invalidate fromParcel and toParcel to reduce drawing
 			{
@@ -328,7 +334,7 @@ class MapView implements Map {
 		return mMap.getParcelMap();
 	}
 	
-	public Point gameXYToParcelXY(long _posX, long _posY) {
+	public Point gameXYToParcelXY(double _posX, double _posY) {
 		/* TODO: This is where the enumerations go wrong !!!! The subview isn't placed properly within its parent */
 		return mMap.gameXYToParcelXY(
 			_posX + mOffset.x,
@@ -338,6 +344,14 @@ class MapView implements Map {
 	
 	public Parcel getParcel(long _posX, long _posY) {
 		return mMap.getParcel(_posX, _posY);
+	}
+	
+	public Parcel getParcel(Point _pos) {
+		return _pos != null ? mMap.getParcel(_pos.x, _pos.y) : null;
+	}
+	
+	public Parcel getParcel(FloatPoint _pos) {
+		return _pos != null ? mMap.getParcel((int)_pos.getX(), (int)_pos.getY()): null;
 	}
 	
 	public Point getParcelPosition(Parcel _parcel) {
@@ -356,9 +370,9 @@ class MapView implements Map {
 		return new MapView(this, _centerX, _centerY, _width, _height);
 	}
 	
-	public void moveObject(GameObject _obj, Point _from, Point _to) {
-		Parcel fromParcel =  (_from != null) ? getParcel( _from.x, _from.y ) : null;
-		Parcel toParcel = (_to != null) ? getParcel( _to.x, _to.y ) : null;
+	public void moveObject(GameObject _obj, FloatPoint _from, FloatPoint _to) {
+		Parcel fromParcel =  getParcel(_from);
+		Parcel toParcel = getParcel(_to);
 		if (fromParcel != toParcel) {
 			// TODO: invalidate fromParcel and toParcel to reduce drawing
 			{
@@ -374,6 +388,7 @@ class MapView implements Map {
 			}
 		}
 	}
+
 }
 
 
