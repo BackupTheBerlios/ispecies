@@ -8,8 +8,8 @@
   <property environment="myenv" />
 
   <path id="classpath">
-    <fileset dir="lib" includes="*.jar"/>
-    <pathelement location="${build}/classes"/>
+    <!--    <fileset dir="lib" includes="*.jar"/> -->
+    <pathelement location="${build}"/>
   </path>
 
   <target name="clean">
@@ -20,18 +20,26 @@
   <target name="prepare" depends="init" description="Create build directories.">
     <mkdir dir="${build}" />
     <mkdir dir="${build}/classes" />
-    <mkdir dir="${build}/lib" />
+    <!-- <mkdir dir="${build}/lib" /> -->
+    <mkdir dir="${build}/res" />
+    <copy todir="${build}/res">
+      <fileset dir="${basedir}/res"/>
+    </copy>
   </target>
 
   <target name="compile" depends="prepare" description="Compile app Java files">
-    <javac srcdir="${basedir}" destdir="${build}/classes">
+    <javac srcdir="${basedir}" destdir="${build}">
     	<include name="**/*.java" />
      	<classpath refid="classpath"/>
     </javac>
   </target>
 
   <target name="build" depends="compile" description="Build JAR file">
-    <jar jarfile="${basedir}/iSpecies.jar" basedir="${build}"/>
+    <jar jarfile="${basedir}/iSpecies.jar" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="GameTest"/>
+      </manifest>
+    </jar>
   </target>
   
 </project>
