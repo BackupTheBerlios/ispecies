@@ -2,6 +2,8 @@
  *  GameObject.java
  */
 
+import java.util.*;
+
 import util.*;
 
 /**
@@ -43,6 +45,34 @@ interface GameObject {
 	String getName();
 
 
+	/**
+	 *  Adds a new listener to the queue of listeners intereseted in object events.
+	 *
+	 *@param  _listener  The listener that wants to be notified of events related to this object
+	 */
+	void addObjectListener(ObjectListener _listener);
+	
+	
+	/**
+	 *  Object will be terminated due to influences from within the Universe.
+	 *  This could be anything from being killed by a bullet, to walking into lava, to dying of thirst.
+	 */
+	void kill();
+	
+	
+	/**
+	 *  Object will be terminated due to influences from within the Universe.
+	 *  This could be anything from being killed by a bullet, to walking into lava, to dying of thirst.
+	 *
+	 *@param  _killer  A reference to the GameObject responsible for this object's death, null if it
+	 * was due to other circumstances (like environment).
+	 */
+	void kill(GameObject _killer);
+
+
+	/**
+	 *  Object will be silently removed from the Universe.
+	 */
 	public void terminate();
 }
 
@@ -56,6 +86,24 @@ class BaseGameObject implements GameObject {
 	GameMap mMap;
 	FloatPoint mPosition;
 	String mName;
+	List mListeners;
+
+	/**
+	 *  Constructor for the BaseGameObject object
+	 *
+	 *@param  _name  Description of the Parameter
+	 *@param  _map   Description of the Parameter
+	 *@param  _x     Description of the Parameter
+	 *@param  _y     Description of the Parameter
+	 */
+	BaseGameObject(String _name, GameMap _map, int _x, int _y) {
+		mName = _name;
+		mMap = _map;
+		mPosition = null;
+		setPosition(new FloatPoint(_x, _y));
+		mListeners = new ArrayList();
+		Logger.log("Created new GameObject: " + this);
+	}
 
 
 	/**
@@ -94,24 +142,49 @@ class BaseGameObject implements GameObject {
 
 
 	/**
-	 *  Constructor for the BaseGameObject object
+	 *  Adds a new listener to the queue of listeners intereseted in object events.
 	 *
-	 *@param  _name  Description of the Parameter
-	 *@param  _map   Description of the Parameter
-	 *@param  _x     Description of the Parameter
-	 *@param  _y     Description of the Parameter
+	 *@param  _listener  The listener that wants to be notified of events related to this object
 	 */
-	BaseGameObject(String _name, GameMap _map, int _x, int _y) {
-		mName = _name;
-		mMap = _map;
-		mPosition = null;
-		setPosition(new FloatPoint(_x, _y));
-		Logger.log("Created new GameObject: " + this);
+	public void addObjectListener(ObjectListener _listener) {
+		mListeners.add(_listener);
+	}
+	
+
+	/**
+	 *  Object will be terminated due to influences from within the Universe.
+	 *  This could be anything from being killed by a bullet, to walking into lava, to dying of thirst.
+	 */
+	public void kill() {
+		kill(null);
+	}
+
+	
+	/**
+	 *  Object will be terminated due to influences from within the Universe.
+	 *  This could be anything from being killed by a bullet, to walking into lava, to dying of thirst.
+	 *
+	 *@param  _killer  A reference to the GameObject responsible for this object's death, null if it
+	 * was due to other circumstances (like environment).
+	 */
+	public void kill(GameObject _killer) {
+		ObjectEvent event = new ObjectEvent(this, _killer);
+		Iterator i = mListeners.listIterator();
+		while (i.hasNext()) {
+			ObjectListener listener = (ObjectListener)(i.next());
+			listener.died(event);
+		}
+		terminate();
 	}
 
 
+	/**
+	 *  Object will be silently removed from the Universe.
+	 */
 	public void terminate() {
+		mListeners = null;
 		setPosition(null);
+		mMap = null;
 	}
 
 
@@ -155,7 +228,13 @@ class BaseGameObject implements GameObject {
 	public String getName() {
 		return mName;
 	}
-	
+
+
+	public GameMap getMap() {
+		return mMap;
+	}
+
+
 	public String toString() {
 		String name = getName();
 		if (name == null) {
@@ -195,6 +274,37 @@ class GameObjectDecorator implements GameObject {
 	 */
 	GameObjectDecorator(GameObject _base) {
 		base = _base;
+	}
+
+
+	/**
+	 *  Adds a new listener to the queue of listeners intereseted in object events.
+	 *
+	 *@param  _listener  The listener that wants to be notified of events related to this object
+	 */
+	public void addObjectListener(ObjectListener _listener) {
+		base.addObjectListener(_listener);
+	}
+	
+
+	/**
+	 *  Object will be terminated due to influences from within the Universe.
+	 *  This could be anything from being killed by a bullet, to walking into lava, to dying of thirst.
+	 */
+	public void kill() {
+		base.kill();
+	}
+
+	
+	/**
+	 *  Object will be terminated due to influences from within the Universe.
+	 *  This could be anything from being killed by a bullet, to walking into lava, to dying of thirst.
+	 *
+	 *@param  _killer  A reference to the GameObject responsible for this object's death, null if it
+	 * was due to other circumstances (like environment).
+	 */
+	public void kill(GameObject _killer) {
+		base.kill(_killer);
 	}
 
 
@@ -341,6 +451,11 @@ class RandomGameObjectMover extends GameObjectDecorator
 /*
  *  Revision history, maintained by CVS.
  *  $Log: GameObject.java,v $
+ *  Revision 1.8  2002/11/11 10:46:36  quintesse
+ *  Added addObjectListener(), kill() and kill(_killer) methods to the GameObject interface.
+ *  BaseGameObject implements the new methods by allowing ObjectListeners to register themselves with the object and by notifying them when the object's kill() method has been called.
+ *  BaseGameObject now has a getMap() which is a bit of a hack.
+ *
  *  Revision 1.7  2002/11/07 00:51:39  quintesse
  *  Added terminate() to GameObject interface to handle clean-up.
  *  Implemented basic clean-up for existing GameObject classes.
