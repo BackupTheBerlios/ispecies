@@ -1,20 +1,34 @@
 # width and height of the map in game units
 640 640
-# width and height of a parcel 
-64 64
-# ParcelMap
+# width and height of a parcel
+32 32
 #
-# 0 = grass
-# 1 = water
-# 2 = desert
+# Resources
 #
-0 0 0 0 0 0 0 0 0 0
-0 1 1 1 1 1 1 1 1 0
-0 1 2 2 0 0 0 0 1 0
-0 1 0 2 0 0 0 0 1 0
-0 1 0 2 2 0 0 0 1 0
-0 1 0 0 2 2 0 0 1 0
-0 1 0 0 0 2 2 0 1 0
-0 1 0 0 0 0 2 2 1 0
-0 1 1 1 1 1 1 1 1 0
-0 0 0 0 0 0 0 0 0 0
+Tileset 2 Brown
+Tileset 1 Blue
+Tileset 0 Green
+end
+#
+# ParcelMap (Type/Shape/Height)
+#
+0q1 0q1 0k1 0a1 0a1 0a1 0a1 0o0 0a0 0a0 0q1 0q1 0k1 0a1 0a1 0a1 0a1 0o0 0a0 0a0
+0a2 0a2 0w2 0k1 0a1 0a1 0a1 0o0 0a0 0a0 0a2 0a2 0w2 0k1 0a1 0a1 0a1 0o0 0a0 0a0
+0a2 0a2 0a2 0o1 0a1 0v1 0p0 0m0 0a0 0a0 0a2 0a2 0a2 0o1 0a1 0v1 0p0 0m0 0a0 0a0
+0a2 0a2 0a2 0o1 0a1 0o0 0a0 0a0 0a0 2a0 0a2 0a2 0a2 0o1 0a1 0o0 0a0 0a0 0a0 2a0
+1a2 1a2 1a2 1o1 1a1 1o0 1a0 0a0 2a0 2a0 1a2 1a2 1a2 1o1 1a1 1o0 1a0 0a0 2a0 2a0
+0a2 0a2 0a2 0o1 0a1 0o0 1a0 2a0 2a0 1a0 0a2 0a2 0a2 0o1 0a1 0o0 1a0 2a0 2a0 1a0
+0a2 0a2 0a2 0o1 0a1 0o0 1a0 1a0 1a0 1a0 0a2 0a2 0a2 0o1 0a1 0o0 1a0 1a0 1a0 1a0
+0p1 0p1 0p1 0m1 0v1 2m0 2a0 1a0 1a0 1a0 0p1 0p1 0p1 0m1 0v1 2m0 2a0 1a0 1a0 1a0
+0p0 0p0 0p0 0p0 2m0 2a0 2a0 1a0 1a0 1a0 0p0 0p0 0p0 0p0 2m0 2a0 2a0 1a0 1a0 1a0
+0a0 0a0 0a0 0a0 2a0 2a0 1a0 1a0 1a0 1a0 0a0 0a0 0a0 0a0 2a0 2a0 1a0 1a0 1a0 1a0
+0a0 0a0 0a0 0a0 2a0 2a0 1a0 1a0 1a0 1a0 0a0 0a0 0a0 0a0 2a0 2a0 1a0 1a0 1a0 1a0
+0p0 0p0 0p0 0p0 2m0 2a0 2a0 1a0 1a0 1a0 0p0 0p0 0p0 0p0 2m0 2a0 2a0 1a0 1a0 1a0
+0p1 0p1 0p1 0m1 0v1 2m0 2a0 1a0 1a0 1a0 0p1 0p1 0p1 0m1 0v1 2m0 2a0 1a0 1a0 1a0
+0a2 0a2 0a2 0o1 0a1 0o0 1a0 1a0 1a0 1a0 0a2 0a2 0a2 0o1 0a1 0o0 1a0 1a0 1a0 1a0
+0a2 0a2 0a2 0o1 0a1 0o0 1a0 2a0 2a0 1a0 0a2 0a2 0a2 0o1 0a1 0o0 1a0 2a0 2a0 1a0
+1a2 1a2 1a2 1o1 1a1 1o0 1a0 0a0 2a0 2a0 1a2 1a2 1a2 1o1 1a1 1o0 1a0 0a0 2a0 2a0
+0a2 0a2 0a2 0o1 0a1 0o0 0a0 0a0 0a0 2a0 0a2 0a2 0a2 0o1 0a1 0o0 0a0 0a0 0a0 2a0
+0a2 0a2 0a2 0o1 0a1 0v1 0p0 0m0 0a0 0a0 0a2 0a2 0a2 0o1 0a1 0v1 0p0 0m0 0a0 0a0
+0a2 0a2 0w2 0k1 0a1 0a1 0a1 0o0 0a0 0a0 0a2 0a2 0w2 0k1 0a1 0a1 0a1 0o0 0a0 0a0
+0q1 0q1 0k1 0a1 0a1 0a1 0a1 0o0 0a0 0a0 0q1 0q1 0k1 0a1 0a1 0a1 0a1 0o0 0a0 0a0
