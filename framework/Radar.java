@@ -1,9 +1,4 @@
-import java.io.*;
 import java.awt.*;
-import java.util.*;
-import java.util.logging.*;
-
-import util.*;
 
 /**
  *  This class models a radar on the map
@@ -12,8 +7,6 @@ import util.*;
  *@created    6 november 2002
  */
 public class Radar extends BaseGameObject implements TimerReceiver {
-	static Logger mLogger = Logger.getLogger(Radar.class.getName());
-
 	Universe mGame = null;
 	RadarViewport mViewport; // should be a vector, to handle multiple views on this radar
 	TimerTrigger mTrigger;
@@ -39,7 +32,7 @@ public class Radar extends BaseGameObject implements TimerReceiver {
 		mTrigger = new TimerTrigger(this);
 		mTrigger.setRepeat(true);
 		setUniverse(_game);
-		mLogger.info("Radar created");
+		Logger.info("Radar created");
 	}
 
 
@@ -154,6 +147,9 @@ public class Radar extends BaseGameObject implements TimerReceiver {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Radar.java,v $
+ *  Revision 1.4  2003/06/05 15:29:47  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *
  *  Revision 1.3  2002/11/12 08:32:54  quintesse
  *  Now using official 1.4 JDK logging system.
  *

@@ -2,7 +2,6 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 import java.awt.*;
 
 /**
@@ -11,8 +10,6 @@ import java.awt.*;
  *@created    5 november 2002
  */
 public class ResourceManager {
-	static Logger mLogger = Logger.getLogger(ResourceManager.class.getName());
-
 	Dictionary dictImageNames;
 	Dictionary dictImages;
 	Dictionary dictTileNames;
@@ -77,7 +74,7 @@ public class ResourceManager {
 		Integer i = new Integer(_nId);
 		dictImageNames.put(i, _sName);
 		dictImages.put(i, img);
-		mLogger.info("Registered image '" + _sName + "'");
+		Logger.info("Registered image '" + _sName + "'");
 	}
 
 
@@ -129,7 +126,7 @@ public class ResourceManager {
 		dictTileMaps.put(i, tileMap);
 		dictTiles.put(i, tiles);
 
-		mLogger.info("Registered tileset '" + _sName + "' (#" + _nId + ")");
+		Logger.info("Registered tileset '" + _sName + "' (#" + _nId + ")");
 	}
 
 
@@ -190,6 +187,9 @@ public class ResourceManager {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: ResourceManager.java,v $
+ *  Revision 1.5  2003/06/05 15:30:34  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *
  *  Revision 1.4  2002/11/12 08:32:54  quintesse
  *  Now using official 1.4 JDK logging system.
  *

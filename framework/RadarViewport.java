@@ -1,9 +1,5 @@
-
-import java.io.*;
 import java.awt.*;
 import java.util.*;
-import java.util.logging.*;
-
 import util.*;
 
 /**
@@ -13,8 +9,6 @@ import util.*;
  *@created    6 november 2002
  */
 public class RadarViewport extends Viewport {
-	static Logger mLogger = Logger.getLogger(RadarViewport.class.getName());
-
 	Radar mRadar;
 	int mnLastAngle = 0; // last angle received (= last line drawn)
 	long mlLastTime;
@@ -46,7 +40,7 @@ public class RadarViewport extends Viewport {
 		setRadar(_radar);
 		setContainer(_container);
 		mlLastTime = System.currentTimeMillis();
-		mLogger.info("RadarViewport created");
+		Logger.info("RadarViewport created");
 	}
 
 
@@ -174,7 +168,7 @@ public class RadarViewport extends Viewport {
 		if (radar != null) {
 			// for every GameObject within the radar's bounding box
 			for (Enumeration e = mRadar.getRadarMap().getObjectEnumeration(); e.hasMoreElements();) {
-mLogger.info("############");
+				Logger.info("############");
 				GameObject object = (GameObject)e.nextElement();
 				if (object.getPosition() != null) {
 					FloatPoint p = new FloatPoint(object.getPosition());
@@ -191,6 +185,9 @@ mLogger.info("############");
 /*
  *  Revision history, maintained by CVS.
  *  $Log: RadarViewport.java,v $
+ *  Revision 1.9  2003/06/05 15:30:01  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *
  *  Revision 1.8  2002/11/12 08:35:27  quintesse
  *  Now using official 1.4 JDK logging system.
  *  Paint method now using getRadarMap() instead of getMap().

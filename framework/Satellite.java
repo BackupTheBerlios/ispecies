@@ -1,20 +1,11 @@
 
-import java.io.*;
-import java.awt.*;
-import java.util.*;
-import java.util.logging.*;
-
-import util.*;
-
 // this class represents a Satellite above the map
 public class Satellite {
-	static Logger mLogger = Logger.getLogger(Satellite.class.getName());
-
 	Universe mGame;
 	
 	Satellite(Universe _game) {
 		setUniverse(_game);
-		mLogger.info("Satellite created");
+		Logger.info("Satellite created");
 	}
 	
 	Satellite() {
@@ -38,6 +29,9 @@ public class Satellite {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Satellite.java,v $
+ *  Revision 1.9  2003/06/05 15:30:34  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *
  *  Revision 1.8  2002/11/12 08:31:33  quintesse
  *  Now using official 1.4 JDK logging system.
  *
@@ -50,4 +44,3 @@ public class Satellite {
  *  Added CVS history section.
  *
  */
-
