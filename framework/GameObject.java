@@ -1,90 +1,53 @@
 
-// Game object. Has behaviour. Does not know how to draw
-// itself, but has a reference to a Visual;
 import java.awt.Point;
 
-interface GameObject
-	// voorlopig heeft een GameObject alleen een positie
-	// volgens Tako's idee zou hij ook een parcel moeten 
-	// hebben. Op zich prima. Ik denk trouwens wel dat de
-	// setParcel() method niet public mag zijn. Feitelijk
-	// is 't een afgeleid attribuut (van position) en die
-	// kun je beter niet van buitenaf laten wijzigen.
-{
+// Game object. Has behaviour. Does not know how to draw
+// itself, but has a reference to a Visual;
+interface GameObject {
 	Point getPosition();
 	void  setPosition(Point _position);
-	public Parcel getParcel();
-	void  setParcel(Parcel _parcel);
 	void setName(String _name);
 	String getName();
 }
 
-class BaseGameObject 
-	implements GameObject
-{
+class BaseGameObject implements GameObject {
 	GameMap mMap;
 	Point mPosition;
-	Parcel mParcel;
 	String mName;
 
-	BaseGameObject(GameMap _map, Point _position) 
-	{
+	BaseGameObject(GameMap _map, Point _position) {
 		this( _map, _position.x, _position.y );
 	}
-
-	BaseGameObject(String _name, GameMap _map, Point _position) 
-	{
+	
+	BaseGameObject(String _name, GameMap _map, Point _position) {
 		this(_name, _map, _position.x, _position.y );
 	}
 	
-	BaseGameObject(GameMap _map, int x, int y)
-	{
+	BaseGameObject(GameMap _map, int x, int y) {
 		this(null, _map, x, y);
 	}
-
-	BaseGameObject(String _name, GameMap _map, int x, int y)
-	{
+	
+	BaseGameObject(String _name, GameMap _map, int x, int y) {
 		mName = _name;
 		mMap = _map;
 		mPosition = new Point(x, y);
 		setPosition(mPosition);
 	}
 	
-	protected void finalize() 
-	{
-		mParcel.removeObject(this);
-	}
-
-	public Point getPosition()
-	{
+	public Point getPosition() {
 		return mPosition;
 	}
-
-	public void setPosition(Point _position)
-	{
-		mPosition.move(_position.x, _position.y);
-		setParcel(mMap.getParcel(mPosition.x, mPosition.y));
+	
+	public void setPosition(Point _position) {
+		mMap.moveObject(this, getPosition(), _position);
+		//mPosition.move(_position.x, _position.y);
+		mPosition = _position;
 	}
-
-	public Parcel getParcel() 
-	{
-		return mParcel;
-	}
-
-	public void setParcel(Parcel _parcel) 
-	{
-		if (_parcel == mParcel)
-			return;
-
-		if (mParcel != null)
-			mParcel.removeObject(this);
-		mParcel = _parcel;
-		if (mParcel != null)
-			mParcel.addObject(this);
-	}
+	
 	public void setName(String _name) {
 		mName = _name;
 	}
+	
 	public String getName() {
 		return mName;
 	}
@@ -107,8 +70,6 @@ class GameObjectDecorator
 	GameObjectDecorator(GameObject _base) { base = _base; }
 	public Point getPosition(){ return base.getPosition(); }
 	public void  setPosition(Point _position) { base.setPosition(_position); }
-	public Parcel getParcel() { return base.getParcel(); }
-	public void  setParcel(Parcel _parcel) { base.setParcel(_parcel); }
 	public void setName(String _name) { base.setName(_name); }
 	public String getName() { return base.getName(); }
 }
@@ -166,7 +127,7 @@ class RandomGameObjectMover extends GameObjectDecorator
 		}
 		if (Math.random() < 0.50)
 		{
-			Point pos = base.getPosition();
+			Point pos = new Point(base.getPosition());
 			pos.x += direction.x;
 			if (pos.x < 0)
 				pos.x = 0;
