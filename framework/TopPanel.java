@@ -167,6 +167,7 @@ public class TopPanel extends java.awt.Panel {
 			}
 		}
 		else if ("fm".equals(action)) {
+			/*
 			System.out.println("Flag map for PathFinder class:");
 			System.out.println("FLAGMAP = "+PathFinder.FLAGMAP.length+" x "+PathFinder.FLAGMAP[0].length);
 			for (int y=0; y < PathFinder.FLAGMAP[1].length; y++) {
@@ -175,6 +176,7 @@ public class TopPanel extends java.awt.Panel {
 				}
 				System.out.println("");
 			}
+			*/
 		}
 	}//GEN-LAST:event_goBtnActionPerformed
 
