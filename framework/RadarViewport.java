@@ -207,7 +207,7 @@ class RadarViewport extends Frame
 	void DrawObject(Graphics g, int x, int y, int size)
 	{
 		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
-		//System.out.println("object drawn");
+		//Logger.log("object drawn");
 		//g.drawOval(LEFT+x*SCALE,TOP+y*SCALE,size,size); // putPixel
 		g.drawLine(LEFT+x*SCALE,TOP+y*SCALE,LEFT+x*SCALE,TOP+y*SCALE);
 	}
@@ -236,4 +236,12 @@ class RadarViewport extends Frame
 	}
 }
 
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: RadarViewport.java,v $
+ *  Revision 1.5  2002/11/05 15:27:21  quintesse
+ *  Using Logger.log() instead of System.out.writeln();
+ *  Added CVS history section.
+ *
+ */
 

@@ -108,7 +108,7 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 	}
 	
 	public void log(String _line) {
-		System.out.println(getName()+": "+_line);
+		Logger.log(getName()+": "+_line);
 	}
 	
 	public String toString(Point _p) {
@@ -202,7 +202,7 @@ class OneStepLookAheadDirector implements Director {
 		return getFLAGMAP(_map)[parcelindex.x][parcelindex.y] * 1000 + _pos.distance(dst);
 	}
 	public void log(String _line) {
-		System.out.println("OneStepLookAheadDirector: "+_line);
+		Logger.log("OneStepLookAheadDirector: "+_line);
 	}
 	
 	public String toString(Point _p) {
@@ -218,3 +218,12 @@ class OneStepLookAheadDirector implements Director {
 		return Integer.toString((int)_f)+"."+Integer.toString((int)(_f * 100 % 100));
 	}
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: PathFinder.java,v $
+ *  Revision 1.5  2002/11/05 15:27:48  quintesse
+ *  Using Logger.log() instead of System.out.writeln();
+ *  Added CVS history section.
+ *
+ */

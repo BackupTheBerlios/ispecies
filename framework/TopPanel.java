@@ -139,42 +139,42 @@ public class TopPanel extends java.awt.Panel {
 
 	private void goBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goBtnActionPerformed
 		String command = actionTxt.getText();
-		System.out.println("command = '"+command+"'");
+		Logger.log("command = '"+command+"'");
 		StringTokenizer parser = new StringTokenizer(command);
 		String action = parser.nextToken();
-		System.out.println("action = '"+action+"'");
+		Logger.log("action = '"+action+"'");
 		if ("go".equals(action)) {
 			if (parser.hasMoreTokens()) {
-				System.out.println("next token = '"+parser.nextToken()+"'");
+				Logger.log("next token = '"+parser.nextToken()+"'");
 			}
 			else {
 				// list game objects
 				ObjectEnumeration objects = game.map.getRange().getObjectEnumeration();
 				while (objects.hasMoreElements()) {
 					GameObject obj = (GameObject)objects.nextElement();
-					System.out.println("name = "+obj.getName());
-					System.out.println("position = "+obj.getPosition());
+					Logger.log("name = "+obj.getName());
+					Logger.log("position = "+obj.getPosition());
 					/*
 					Object t = obj.getInterface("Targettable");
 					if (obj.getInterface("Targettable") != null) {
-						System.out.println("target = "+((Targettable)obj.getInterface("Targettable")).getTarget());
+						Logger.log("target = "+((Targettable)obj.getInterface("Targettable")).getTarget());
 					}
 					*/
 					if (obj instanceof Targettable) {
-						System.out.println("target = "+((Targettable)obj).getTarget());
+						Logger.log("target = "+((Targettable)obj).getTarget());
 					}
 				}
 			}
 		}
 		else if ("fm".equals(action)) {
 			/*
-			System.out.println("Flag map for PathFinder class:");
-			System.out.println("FLAGMAP = "+PathFinder.FLAGMAP.length+" x "+PathFinder.FLAGMAP[0].length);
+			Logger.log("Flag map for PathFinder class:");
+			Logger.log("FLAGMAP = "+PathFinder.FLAGMAP.length+" x "+PathFinder.FLAGMAP[0].length);
 			for (int y=0; y < PathFinder.FLAGMAP[1].length; y++) {
 				for (int x=0; x < PathFinder.FLAGMAP.length; x++) {
 					System.out.print(PathFinder.FLAGMAP[x][y]);
 				}
-				System.out.println("");
+				Logger.log("");
 			}
 			*/
 		}
@@ -229,3 +229,13 @@ public class TopPanel extends java.awt.Panel {
     // End of variables declaration//GEN-END:variables
 	
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: TopPanel.java,v $
+ *  Revision 1.6  2002/11/05 15:30:42  quintesse
+ *  Using Logger.log() instead of System.out.writeln();
+ *  Added CVS history section.
+ *
+ */
+

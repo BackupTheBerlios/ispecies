@@ -16,7 +16,7 @@ class Satellite implements TimerReceiver {
 		trigger = new TimerTrigger( this );
 		trigger.setRepeat(true);
 		OnUniverse(_game);
-		System.out.println("Satellite created");
+		Logger.log("Satellite created");
 	}
 	
 	Satellite() {
@@ -67,7 +67,7 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		
-		System.out.println("SatelliteViewport created");
+		Logger.log("SatelliteViewport created");
 	}
 	SatelliteViewport( Universe _game ) {
 		this(_game,null);
@@ -108,7 +108,7 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 		img = createImage(_width,_height);
 		System.err.println("Create OSB of "+_width+"x"+_height);
 		bg  = img.getGraphics();
-		System.out.println("SatelliteViewport created");
+		Logger.log("SatelliteViewport created");
 	}
 	
 	// draws the terrain of a parcel
@@ -226,14 +226,14 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 	public void mousePressed(MouseEvent event) {
 		Point p = screenToGameCoords(mouseToScreenCoords(event.getPoint()));
 		Point pp = satellite.map.gameXYToParcelXY(p.x, p.y);
-		System.out.println("MousePressed " + p + pp);
+		Logger.log("MousePressed " + p + pp);
 		MapView v = satellite.map.getRange(p, 32, 32);
 		for (Enumeration e = v.getObjectEnumeration(); e.hasMoreElements(); ) {
 			GameObject obj = (GameObject)e.nextElement();
-			System.out.println(obj);
+			Logger.log(obj.getName());
 			if (obj instanceof Targettable) {
 				Targettable to = (Targettable)obj;
-				System.out.println("target = "+to.getTarget());
+				Logger.log("target = "+to.getTarget());
 			}
 		}
 	}
@@ -253,3 +253,13 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 	public void mouseDragged(MouseEvent event) {
 	}
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: Satellite.java,v $
+ *  Revision 1.6  2002/11/05 15:29:16  quintesse
+ *  Using Logger.log() instead of System.out.writeln();
+ *  Added CVS history section.
+ *
+ */
+
