@@ -54,8 +54,8 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 	public void doTimer(TimerTrigger timerTrigger) {
 		//log("received timer trigger");
 		// determine direction and distance of movement
-		Point pos = getPosition();
-		Point direction = new Point(mTarget.x - getPosition().x, mTarget.x - getPosition().y);
+		Point pos = new Point(getPosition());
+		Point direction = new Point(mTarget.x - pos.x, mTarget.x - pos.y);
 		double distance = pos.distance(mTarget.getX(), mTarget.getY());
 		// if distance > speed, scale vector down to speed
 		if (distance > mSpeed) {
@@ -105,6 +105,7 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 		return getFLAGMAP()[parcelindex.x][parcelindex.y];
 	}
 	
+	// rotates the vector [_v] by [_a] degrees
 	protected Point rotate(Point _v, int _a) {
 		double a = Math.toRadians(_a);
 		Point result = new Point(
@@ -115,25 +116,23 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 		return result;
 	}
 
-	
-	public void setParcel(Parcel _parcel) {
-		//log("setParcel("+_parcel+")");
-		// let superclass handle normal setting of parcel
-		super.setParcel(_parcel);
-		if (mParcel != null) {
-			// handle allowed parcels for pathfinder
-			if (mParcel.getTerrain() instanceof WaterTerrain) {
+	public void setPosition(Point _position) {
+		super.setPosition(_position);
+		if (mGame != null) {
+			Parcel aNewParcel = mGame.getMap().getParcel(_position.x, _position.y);
+			if (aNewParcel.getTerrain() instanceof WaterTerrain) {
 				// can't live in water, handle object 'death'
 				log("died in water");
 				// update flagmap
-				Point parcelposition = mMap.getParcelPosition(_parcel);
+				Point parcelposition = mMap.gameXYToParcelXY(_position.x, _position.y);
 				getFLAGMAP()[parcelposition.x][parcelposition.y]++;
 				// remove object from universe
 				mGame.heartBeat.remove(mTrigger);
-				setParcel(null);
-			}	
+				// remove object form map
+				super.setPosition(null);
+			}
 		}
-	} // setParcel
+	}
 	
 	public void log(String _line) {
 		System.out.println(getName()+": "+_line);
