@@ -66,7 +66,14 @@ public class RadarViewport extends Viewport {
 
 	public void terminate() {
 		super.terminate();
-		mRadar.terminate();
+		Radar radar = null;
+		synchronized(this) {
+			radar = mRadar;
+			mRadar = null;
+		}
+		if (radar != null) {
+			radar.terminate();
+		}
 	}
 
 
@@ -76,11 +83,13 @@ public class RadarViewport extends Viewport {
 	 *@param  _radar  The new radar value
 	 */
 	public void setRadar(Radar _radar) {
-		mRadar = _radar;
-		if (mRadar != null) {
+		synchronized(this) {
+			mRadar = _radar;
+		}
+		if (_radar != null) {
 			mPreferredSize = new Dimension(
-					2 * (int)(PREFERRED_SCALE * mRadar.getRadius()),
-					2 * (int)(PREFERRED_SCALE * mRadar.getRadius())
+					2 * (int)(PREFERRED_SCALE * _radar.getRadius()),
+					2 * (int)(PREFERRED_SCALE * _radar.getRadius())
 			);
 		} else {
 			mPreferredSize = null;
@@ -154,22 +163,33 @@ public class RadarViewport extends Viewport {
 		_g.setColor(BG_COLOR);
 		_g.fillRect(0, 0, _g.getClipBounds().width, _g.getClipBounds().height);
 		drawOutline(_g);
-		// for every GameObject within the radar's bounding box
-		for (Enumeration e = mRadar.getMap().getObjectEnumeration(); e.hasMoreElements();) {
-Logger.log("############");
-			GameObject object = (GameObject)e.nextElement();
-			FloatPoint p = new FloatPoint(object.getPosition());
-			p.x -= mRadar.getPosition().x;
-			p.y -= mRadar.getPosition().y;
-			drawObject(_g, p.toPoint(), 2);
+		Radar radar = null;
+		synchronized(this) {
+			radar = mRadar;
 		}
-		drawSegment(_g, mRadar.getAngle(), mRadar.getRotationSpeed());
+		if (radar != null) {
+			// for every GameObject within the radar's bounding box
+			for (Enumeration e = mRadar.getMap().getObjectEnumeration(); e.hasMoreElements();) {
+Logger.log("############");
+				GameObject object = (GameObject)e.nextElement();
+				if (object.getPosition() != null) {
+					FloatPoint p = new FloatPoint(object.getPosition());
+					p.x -= mRadar.getPosition().x;
+					p.y -= mRadar.getPosition().y;
+					drawObject(_g, p.toPoint(), 2);
+				}
+			}
+			drawSegment(_g, mRadar.getAngle(), mRadar.getRotationSpeed());
+		}
 	}
 }
 
 /*
  *  Revision history, maintained by CVS.
  *  $Log: RadarViewport.java,v $
+ *  Revision 1.7  2002/11/07 18:01:36  quintesse
+ *  Added some synchronized sections around the references to the Radar model.
+ *
  *  Revision 1.6  2002/11/07 01:07:22  quintesse
  *  Lots of changes because of the new Viewport/ViewportContainer system and because of a clearer separation into a MVC architecture.
  *  The radar model has moved to its own file.
