@@ -93,3 +93,12 @@ class DesertTerrain extends Terrain {
 		color = Color.yellow;
 	}
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: Terrain.java,v $
+ *  Revision 1.3  2002/11/05 15:30:13  quintesse
+ *  Added CVS history section.
+ *
+ */
+
