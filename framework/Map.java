@@ -1,8 +1,31 @@
+
 import java.util.Vector;
 import java.util.Enumeration;
 import java.io.*;
 import java.awt.Color;
 import java.awt.Point;
+
+import util.*;
+
+
+interface Map {
+	HeightMap getHeightMap();
+	ParcelMap getParcelMap();
+	Point gameXYToParcelXY(double _posX, double _posY);
+	Parcel getParcel(long _posX, long _posY);
+	Parcel getParcel(Point _pos);
+	Parcel getParcel(FloatPoint _pos);
+	Point getParcelPosition(Parcel _parcel);
+	FloatPoint getObjectPosition(GameObject _obj);
+	MapView getRange();
+	MapView getRange(Point _center, int _width, int _height);
+	MapView getRange(int _centerX, int _centerY, int _width, int _height);
+	void moveObject(GameObject _obj, FloatPoint _from, FloatPoint _to);
+	Point getCenter();
+	long getWidth();
+	long getHeight();
+	
+}
 
 
 class Parcel {
@@ -101,25 +124,6 @@ class HeightMap {
 }
 
 
-interface Map {
-	HeightMap getHeightMap();
-	ParcelMap getParcelMap();
-	Point gameXYToParcelXY(double _posX, double _posY);
-	Parcel getParcel(long _posX, long _posY);
-	Parcel getParcel(Point _pos);
-	Parcel getParcel(FloatPoint _pos);
-	Point getParcelPosition(Parcel _parcel);
-	MapView getRange();
-	MapView getRange(Point _center, int _width, int _height);
-	MapView getRange(int _centerX, int _centerY, int _width, int _height);
-	void moveObject(GameObject _obj, FloatPoint _from, FloatPoint _to);
-	Point getCenter();
-	long getWidth();
-	long getHeight();
-	
-}
-
-
 class GameMap implements Map {
 	protected HeightMap mHeightMap;
 	protected ParcelMap mParcelMap;
@@ -194,6 +198,10 @@ class GameMap implements Map {
 			}
 		}
 		return null;
+	}
+	
+	public FloatPoint getObjectPosition(GameObject _obj) {
+		return new FloatPoint(_obj.getPosition());
 	}
 	
 	public MapView getRange() {
@@ -316,6 +324,13 @@ class MapView implements Map {
 	
 	public Point getParcelPosition(Parcel _parcel) {
 		return mMap.getParcelPosition(_parcel);
+	}
+	
+	public FloatPoint getObjectPosition(GameObject _obj) {
+		FloatPoint p = new FloatPoint(_obj.getPosition());
+		p.x -= mOffset.x;
+		p.y -= mOffset.y;
+		return p;
 	}
 	
 	public MapView getRange() {
@@ -492,6 +507,10 @@ class ObjectEnumeration implements Enumeration {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Map.java,v $
+ *  Revision 1.6  2002/11/07 01:02:09  quintesse
+ *  Moved interface definition to the top.
+ *  Added the method getObjectPosition() to the interface which returns the position of the object relative to the map.
+ *
  *  Revision 1.5  2002/11/05 15:43:26  quintesse
  *  Removed Vector3D class.
  *  Commented-out an unused method using Vector3D.
