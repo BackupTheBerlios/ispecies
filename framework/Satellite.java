@@ -141,7 +141,7 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 			g.drawOval(sp.x - sw.x/2, sp.y - sw.y/2, sw.x, sw.y);
 		}
 		if (obj instanceof Targettable) {
-			g.setColor(Color.green);
+			g.setColor(Color.white);
 			Point tsp = gameToScreenCoords(((Targettable)obj).getTarget());
 			g.drawLine(sp.x, sp.y, tsp.x, tsp.y);
 		}
