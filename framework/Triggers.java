@@ -1,6 +1,5 @@
 
 import java.util.*;
-import java.util.logging.*;
 
 /**
  *@author     Tako
@@ -29,8 +28,6 @@ interface Trigger {
  *@created    5 november 2002
  */
 class TriggerPool {
-	static Logger mLogger = Logger.getLogger(TriggerPool.class.getName());
-
 	final Vector mTriggers = new Vector();
 	final Vector mRemoved = new Vector();
 
@@ -329,6 +326,9 @@ class TimerTriggerPool extends TriggerPool {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Triggers.java,v $
+ *  Revision 1.5  2003/06/05 15:10:07  puf
+ *  Removed dependency on the JDK1.4 logging mechanism.
+ *
  *  Revision 1.4  2002/11/12 08:31:33  quintesse
  *  Now using official 1.4 JDK logging system.
  *
