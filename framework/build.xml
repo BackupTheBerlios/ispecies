@@ -5,6 +5,8 @@
 
   <property name="build" value="${basedir}/build" />
   <property name="context" value="iSpecies" />
+  <property name="deprecation" value="off" />
+  <property name="debug" value="on" />
   <property environment="myenv" />
 
   <path id="classpath">
@@ -28,7 +30,7 @@
   </target>
 
   <target name="compile" depends="prepare" description="Compile app Java files">
-    <javac srcdir="${basedir}" destdir="${build}">
+    <javac srcdir="${basedir}" destdir="${build}" deprecation="${deprecation}" debug="${debug}">
     	<include name="**/*.java" />
      	<classpath refid="classpath"/>
     </javac>
