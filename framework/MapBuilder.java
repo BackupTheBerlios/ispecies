@@ -1,12 +1,8 @@
 
 import java.io.*;
-import java.awt.*;
 import java.util.*;
-import java.util.logging.*;
 
 public class MapBuilder {
-	static Logger mLogger = Logger.getLogger(MapBuilder.class.getName());
-
 	ResourceManager m_rm;
 	
 	MapBuilder(ResourceManager _rm) {
@@ -48,7 +44,7 @@ public class MapBuilder {
 			// read persisted game objects
 		}
 		catch(IOException e) {
-			mLogger.info("Invalid map file format");
+			Logger.info("Invalid map file format");
 		}
 		return (GameMap)map;
 	}
@@ -145,6 +141,10 @@ public class MapBuilder {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: MapBuilder.java,v $
+ *  Revision 1.8  2003/06/05 15:22:25  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *  Removed unused import.
+ *
  *  Revision 1.7  2002/11/12 08:33:48  quintesse
  *  Now using official 1.4 JDK logging system.
  *
