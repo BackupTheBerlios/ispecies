@@ -1,1 +1,1 @@
-jview Debug\GameTest.class
+java -jar iSpecies.jar
