@@ -1,5 +1,4 @@
 
-import java.io.*;
 import java.awt.*;
 import java.util.*;
 
@@ -86,8 +85,11 @@ public class SatelliteViewport extends Viewport {
 		}
 		if (obj instanceof Targettable) {
 			g.setColor(Color.white);
-			Point tsp = gameToScreenCoords(((Targettable)obj).getTarget());
-			g.drawLine(sp.x, sp.y, tsp.x, tsp.y);
+			Point target = ((Targettable)obj).getTarget();
+			if (target != null) {
+				Point tsp = gameToScreenCoords(target);
+				g.drawLine(sp.x, sp.y, tsp.x, tsp.y);
+			}
 		}
 		if (obj instanceof PathFinder) {
 			PathFinder pf = (PathFinder)obj;
@@ -98,15 +100,42 @@ public class SatelliteViewport extends Viewport {
 					Point current = gameToScreenCoords(director.mLatestNode.mPosition.toPoint());
 					g.drawOval(current.x-1, current.y-1, 2, 2);
 				}
+				// recursively draw all path nodes
 				drawPathNode(g, director.mStartNode);
 				if (director.mLatestNode != null) {
+					// draw the point that was evaluated last
 					g.setColor(Color.magenta);
 					Point current = gameToScreenCoords(director.mLatestNode.mPosition.toPoint());
 					g.drawOval(current.x-1, current.y-1, 2, 2);
+					// draw the min cost for the node evaluated
+					g.drawString(
+						StringHelper.toString(director.mLatestNode.mCost),
+						obj.getPosition().toPoint().x+10, 
+						obj.getPosition().toPoint().y
+					);
+					g.drawString(
+						StringHelper.toString(director.mLatestNode.mCost),
+						current.x+10, 
+						current.y
+					);
+					// draw the potential cost to reach the target
+					g.drawString(
+						StringHelper.toString(director.mLatestNode.mPotentialCost), 
+						gameToScreenCoords(((Targettable)obj).getTarget()).x+10, 
+						gameToScreenCoords(((Targettable)obj).getTarget()).y+10
+					);
+					// draw the path from the start to the node that was evaluated last time
+					PathFinderDirector.PathNode currentBestNode = director.mLatestNode;
+					while (currentBestNode.mPreviousNode != null) {
+						Point from = gameToScreenCoords(currentBestNode.mPosition.toPoint());
+						Point to = gameToScreenCoords(currentBestNode.mPreviousNode.mPosition.toPoint());
+						g.drawLine(from.x, from.y, to.x, to.y);
+						currentBestNode = currentBestNode.mPreviousNode;
+					}
 				}
 			}
 		}
-		
+		// draw the object itself in read
 		g.setColor(Color.red);
 		g.fillOval(sp.x-2, sp.y-2, 4, 4); // putPixel
 	}
@@ -115,14 +144,15 @@ public class SatelliteViewport extends Viewport {
 		if (node != null) {
 			Point point = gameToScreenCoords(node.mPosition.toPoint());
 			// draw the point
-			g.drawOval(point.x - 1, point.y - 1, 1, 1);
+			g.setColor(Color.black);
+			g.drawOval(point.x, point.y, 1, 1);
 			// for each of the next nodes
 			for (int i=0; i < 3; i++) {
 				if (node.mNextNodes[i] != null) {
-					g.setColor(new Color((int)(node.mNextNodes[i].mLowestCost / 2)));
+					//g.setColor(new Color((int)(node.mNextNodes[i].mLowestCost / 2)));
 					// draw a vector to the next node
-					Point dst = gameToScreenCoords(node.mNextNodes[i].mPosition.toPoint());
-					g.drawLine(point.x, point.y, dst.x, dst.y);
+					//Point dst = gameToScreenCoords(node.mNextNodes[i].mPosition.toPoint());
+					//g.drawLine(point.x, point.y, dst.x, dst.y);
 					// let the next node draw itself
 					drawPathNode(g, node.mNextNodes[i]);
 				}
@@ -168,6 +198,9 @@ public class SatelliteViewport extends Viewport {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: SatelliteViewport.java,v $
+ *  Revision 1.3  2003/06/05 15:31:54  puf
+ *  Added some code to draw the network of nodes of the current PathFinder. It's not very pretty, but it helps immensely in debugging the path finding.
+ *
  *  Revision 1.2  2002/11/10 08:20:12  puf
  *  Draws the path of the PathFinderDirector (for debugging purposes).
  *
