@@ -3,7 +3,6 @@
  */
  
 import java.awt.*;
-import java.util.*;
 
 /**
  *  Represents something that is visible. Contains no game logic.
@@ -172,6 +171,9 @@ class AnimatedVisual implements Visual {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Visual.java,v $
+ *  Revision 1.4  2003/06/05 15:07:38  puf
+ *  Removed an unneeded import.
+ *
  *  Revision 1.3  2002/11/05 15:32:34  quintesse
  *  Added Javadoc comments.
  *  Added CVS history section.
