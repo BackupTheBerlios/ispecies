@@ -1,21 +1,22 @@
-import java.awt.Point;
 
 // Game object. Has behaviour. Does not know how to draw
 // itself, but has a reference to a Visual;
-// TODO: Maybe add an "isA" method that checks the base object
-//		 of a decorator. This is useful when we want to treat
-//       a RandomMoving(Radar) like a Radar. Da's dan weer een
-//       soort QueryInterface, dus dan is Bill ook weer blij. ;-)
+import java.awt.Point;
+
 interface GameObject
-	// Ik denk dat de setParcel() method niet public mag
-	// zijn. Feitelijk is 't een afgeleid attribuut (van
-	// position) en die kun je beter niet van buitenaf 
-	// laten wijzigen.
+	// voorlopig heeft een GameObject alleen een positie
+	// volgens Tako's idee zou hij ook een parcel moeten 
+	// hebben. Op zich prima. Ik denk trouwens wel dat de
+	// setParcel() method niet public mag zijn. Feitelijk
+	// is 't een afgeleid attribuut (van position) en die
+	// kun je beter niet van buitenaf laten wijzigen.
 {
-	public Point  getPosition();
-	public void   setPosition(Point _position);
-	public void   setParcel(Parcel _parcel);
-	//public Visual getVisual(); 
+	Point getPosition();
+	void  setPosition(Point _position);
+	public Parcel getParcel();
+	void  setParcel(Parcel _parcel);
+	void setName(String _name);
+	String getName();
 }
 
 class BaseGameObject 
@@ -24,22 +25,36 @@ class BaseGameObject
 	GameMap mMap;
 	Point mPosition;
 	Parcel mParcel;
+	String mName;
 
 	BaseGameObject(GameMap _map, Point _position) 
 	{
-		mMap = _map;
-		mPosition = new Point(_position.x, _position.y);
-		setPosition(_position);
+		this( _map, _position.x, _position.y );
 	}
 
+	BaseGameObject(String _name, GameMap _map, Point _position) 
+	{
+		this(_name, _map, _position.x, _position.y );
+	}
+	
 	BaseGameObject(GameMap _map, int x, int y)
 	{
-		this( _map, new Point(x,y) );
+		this(null, _map, x, y);
 	}
 
+	BaseGameObject(String _name, GameMap _map, int x, int y)
+	{
+		mName = _name;
+		mMap = _map;
+		mPosition = new Point(x, y);
+		setPosition(mPosition);
+System.out.println("Created new GameObject '" + this.getClass().getName() + "' [x=" + x + ",y=" + y + "]");
+	}
+	
 	protected void finalize() 
 	{
 		mParcel.removeObject(this);
+System.out.println("Destroyed GameObject '" + this.getClass().getName() + "' [x=" + mPosition.x + ",y=" + mPosition.y + "]");
 	}
 
 	public Point getPosition()
@@ -50,7 +65,7 @@ class BaseGameObject
 	public void setPosition(Point _position)
 	{
 		mPosition.move(_position.x, _position.y);
-		setParcel(mMap.getParcel(mPosition.x,mPosition.y));
+		setParcel(mMap.getParcel(mPosition.x, mPosition.y));
 	}
 
 	public Parcel getParcel() 
@@ -69,7 +84,13 @@ class BaseGameObject
 		if (mParcel != null)
 			mParcel.addObject(this);
 	}
-}
+	public void setName(String _name) {
+		mName = _name;
+	}
+	public String getName() {
+		return mName;
+	}
+} // BaseGameObject
 
 class GameObjectDecorator
 	implements GameObject
@@ -88,15 +109,19 @@ class GameObjectDecorator
 	GameObjectDecorator(GameObject _base) { base = _base; }
 	public Point getPosition(){ return base.getPosition(); }
 	public void  setPosition(Point _position) { base.setPosition(_position); }
+	public Parcel getParcel() { return base.getParcel(); }
 	public void  setParcel(Parcel _parcel) { base.setParcel(_parcel); }
+	public void setName(String _name) { base.setName(_name); }
+	public String getName() { return base.getName(); }
 }
 
 class RandomGameObjectMover extends GameObjectDecorator
 	implements TimerReceiver
 {
 	int interval = 4;
+	int speed = 1;
 	TimerTrigger trigger;
-	Point direction = new Point(1,1); // move to bottom right initially
+	Point direction;
 	Universe game;
 
 	RandomGameObjectMover(GameObject _base, Universe _game, int _interval)
@@ -104,6 +129,8 @@ class RandomGameObjectMover extends GameObjectDecorator
 		super(_base);
 		game = _game;
 		interval = _interval;
+		speed = (int)(Math.random() * 3) + 1;
+		direction = new Point(speed, speed);
 		// add to heartbeat
 		trigger = new TimerTrigger(this);
 		trigger.setRepeat(true);
@@ -120,10 +147,24 @@ class RandomGameObjectMover extends GameObjectDecorator
 		// determine new direction
 		if (Math.random() < 0.05)
 		{
-			if (Math.random() < 0.50)
-				direction.x = -direction.x;
-			else
-				direction.y = -direction.y;
+			if (Math.random() < 0.50) {
+				double r = Math.random();
+				if (r < 0.33)
+					direction.x = -speed;
+				else if (r > 0.66)
+					direction.x = 0;
+				else
+					direction.x = speed;
+			}
+			if (Math.random() < 0.50) {
+				double r = Math.random();
+				if (r < 0.33)
+					direction.y = -speed;
+				else if (r > 0.66)
+					direction.y = 0;
+				else
+					direction.y = speed;
+			}
 		}
 		if (Math.random() < 0.50)
 		{
