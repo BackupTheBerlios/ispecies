@@ -21,7 +21,7 @@
 
   <target name="prepare" depends="init" description="Create build directories.">
     <mkdir dir="${build}" />
-    <mkdir dir="${build}/classes" />
+    <!-- <mkdir dir="${build}/classes" /> -->
     <!-- <mkdir dir="${build}/lib" /> -->
     <mkdir dir="${build}/res" />
     <copy todir="${build}/res">
