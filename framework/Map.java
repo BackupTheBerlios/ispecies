@@ -1,8 +1,6 @@
 
 import java.util.Vector;
 import java.util.Enumeration;
-import java.io.*;
-import java.awt.Color;
 import java.awt.Point;
 
 import util.*;
@@ -507,6 +505,9 @@ class ObjectEnumeration implements Enumeration {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Map.java,v $
+ *  Revision 1.7  2003/06/05 15:06:48  puf
+ *  Removed some unneeded imports.
+ *
  *  Revision 1.6  2002/11/07 01:02:09  quintesse
  *  Moved interface definition to the top.
  *  Added the method getObjectPosition() to the interface which returns the position of the object relative to the map.
