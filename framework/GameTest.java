@@ -4,7 +4,8 @@
  
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+
+import util.Profiler;
 
 /**
  *  STANDALONE APPLICATION SUPPORT
@@ -94,6 +95,7 @@ public class GameTest extends Frame implements ActionListener {
 	 *  Terminates the application
 	 */
 	public void quit() {
+		Profiler.printTotals();
 		System.exit(0);
 	}
 
@@ -119,12 +121,12 @@ public class GameTest extends Frame implements ActionListener {
 			// create tmp object to watch in the radar
 			new RandomGameObjectMover(
 					new BaseGameObject(
-					game.getMap(),
-					(int)Math.round(Math.random() * game.getMap().mMapWidth),
-					(int)Math.round(Math.random() * game.getMap().mMapHeight)
-					),
-					game,
-					(int)Math.round(Math.random() * 10)
+						game.getMap(),
+						(int)Math.round(Math.random() * game.getMap().mMapWidth),
+						(int)Math.round(Math.random() * game.getMap().mMapHeight)
+						),
+						game,
+						(int)Math.round(Math.random() * 10)
 					);
 		}
 	}
@@ -145,10 +147,10 @@ public class GameTest extends Frame implements ActionListener {
 
 		//new IsometricEditViewport(frame.game,new IsometricDataSource(frame.game));
 		Frame aSatellite = new FramedViewportContainer(frame.game, new SatelliteViewport(new Satellite(frame.game)));
-
 		aSatellite.setLocation(100, 240);
 
 		// create tmp object to watch
+		/*
 		GameObject obj = new TargettableGameObject(
 				new RandomGameObjectMover(
 					new BaseGameObject(
@@ -161,6 +163,7 @@ public class GameTest extends Frame implements ActionListener {
 					(int)Math.round(Math.random() * 10)
 				)
 		);
+		*/
 		PathFinder mover = new PathFinder(
 				"finder",
 				frame.game.getMap(),
@@ -175,6 +178,10 @@ public class GameTest extends Frame implements ActionListener {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: GameTest.java,v $
+ *  Revision 1.7  2003/06/05 15:20:28  puf
+ *  Added call to display totals gathered by the profiler.
+ *  Disabled adding random moving game objects to the universe for the moment.
+ *
  *  Revision 1.6  2002/11/07 00:54:38  quintesse
  *  Now uses the niew Viewport/ViewportContainer system for Radar and Satellite models.
  *  Changed deprecated method call move() to setLocation().
