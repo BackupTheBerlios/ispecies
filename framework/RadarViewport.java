@@ -1,7 +1,6 @@
 import java.io.*;
 import java.awt.*;
 import java.util.*;
-import java.awt.event.*;
 
 
 class Radar extends BaseGameObject
@@ -20,8 +19,12 @@ class Radar extends BaseGameObject
 
 	Radar( Universe _game ) 
 	{
-		super (_game.Map(),0,0);
-		System.out.println("Radar created");
+		super (_game.getMap(),
+			new Point(
+				(int)(Math.random()*_game.map.getWidth()),
+				(int)(Math.random()*_game.map.getHeight())
+			)
+		);
 		trigger = new TimerTrigger ( this );
 		trigger.setRepeat(true);
 		OnUniverse(_game);
@@ -41,27 +44,18 @@ class Radar extends BaseGameObject
 		if (game != null)
 		{
 			game.heartBeat.addRel ( trigger, interval );
-			setPosition(
-				new Point(
-					(int)(Math.random()*game.map.getWidth()),
-					(int)(Math.random()*game.map.getHeight())
-				)
-			);
-			map = game.Map().getRange(getPosition().x,getPosition().y,2*RADIUS,2*RADIUS);
+			map = game.getMap().getRange(getPosition().x,getPosition().y,2*RADIUS,2*RADIUS);
 		}
 	}
 
 	public void doTimer(TimerTrigger tt) 
 	{
-		// sends a segment of radar data on a single line in the following format:
-		// start_angle arc_angle x1 y1 x2 y2 ... xn yn
 		int			tmpAngle, 
 					distance, 
 					dx, dy;
 		GameObject	object;
 		Polygon		pol;
 
-		vp.drawSegment(angle,segment);
 		// alternative ObjectInsideSegment algorithm
 		// create a polygon approximation of the segment
 		pol = new Polygon();
@@ -82,22 +76,25 @@ class Radar extends BaseGameObject
 		{
 			object = (GameObject)e.nextElement();
 			// is it inside the segment?
-			if (pol.contains(object.getPosition().x,object.getPosition().y))
+			//if (pol.inside(object.getPosition().x, object.getPosition().y))
+			//if (pol.contains(object.getPosition().x, object.getPosition().y))
 				// Is it metal?
 				//if (object instanceof RadarVisible)
-					// tell vp to draw
-					vp.drawObject (object.getPosition().x, object.getPosition().y, 1);
+					vp.doDrawObject(this, object.getPosition().x - getPosition().x, object.getPosition().y - getPosition().y, 1);
+					// vp.doDrawObject(this, object.getPosition().x, object.getPosition().y, ((RadarVisible)object).getReflectivity())
 		}
+
+		vp.doDrawSegment(this, angle, segment, pol);
+
 		// increment angle
-		angle = (angle + segment) % 360;
-		//if (angle >= 360)
-		//	angle = angle - 360;
+		angle = angle + segment;
+		if (angle >= 360)
+			angle = angle - 360;
 	}
 }
 
 //class RadarViewport extends Viewport
 class RadarViewport extends Frame
-	implements MouseListener
 {
 	// member variables
 	Image			img = null; // off screen buffer
@@ -106,11 +103,6 @@ class RadarViewport extends Frame
 	Image			dot = null;
 	Universe		game;
 	Radar			radar;
-	// "buttons" to move the radar
-	Rectangle		rcUp    = new Rectangle( 5, 5,10,10);
-	Rectangle		rcLeft  = new Rectangle( 0,15,10,10);
-	Rectangle		rcRight = new Rectangle(10,15,10,10);
-	Rectangle		rcDown  = new Rectangle( 5,25,10,10);
 
 	// class constants
 	public final static int RADIUS = 50; // 100x100 game units
@@ -126,6 +118,8 @@ class RadarViewport extends Frame
 	public final static Color COLOR = Color.green;
 	public final static Color BG_COLOR = Color.black;
 
+	long lastTime;
+
 	RadarViewport( Universe _game, Radar _radar ) 
 	{
 		super("Radar");
@@ -134,32 +128,37 @@ class RadarViewport extends Frame
 		// show and resize our window
 		setBackground(BG_COLOR);
 		show();
+		//resize(VIEWPORT_SIZE+insets().left+insets().right,VIEWPORT_SIZE+insets().top+insets().bottom);
 		setSize(VIEWPORT_SIZE+insets().left+insets().right,VIEWPORT_SIZE+insets().top+insets().bottom);
 		// create an off screen buffer for drawing
 		img = createImage(VIEWPORT_SIZE,VIEWPORT_SIZE);
 		bg = img.getGraphics();
-		drawOutline(bg);
-		// start listening to mouse events
-		addMouseListener(this);
+		DrawOutline(bg);
 		// start loading of the 'dot'
 		dot = Toolkit.getDefaultToolkit().getImage("dot.gif");
+		lastTime = System.currentTimeMillis();
 	}
+	
 	RadarViewport( Universe _game )
 	{
 		this (_game,null);
 	}
+	
 	RadarViewport ()
 	{
 		this(null,null);
 	}
+	
 	protected void finalize()
 	{
 		bg.dispose(); // dispose of the Graphics
 	}
+	
 	public void OnUniverse(Universe _universe)
 	{
 		game = _universe;
 	}
+	
 	public void OnRadar(Radar _radar)
 	{
 		if (radar != null)
@@ -173,90 +172,66 @@ class RadarViewport extends Frame
 		}
 	}
 
-	void drawOutline(Graphics g)
+	void DrawOutline(Graphics g)
 		// draws the (constant) outline of the radar
 	{
+		//Graphics bg = img.getGraphics();
 		g.setColor(COLOR);
 		g.drawRect(0,0,VIEWPORT_SIZE-1,VIEWPORT_SIZE-1); // bounding box
 		g.drawOval(0,0,VIEWPORT_SIZE-1,VIEWPORT_SIZE-1); // radar outline
-		// draw pseudo-buttons to move te radar
-		g.draw3DRect(rcUp.x,rcUp.y,rcUp.width,rcUp.height, true);
-		g.draw3DRect(rcLeft.x,rcLeft.y,rcLeft.width,rcLeft.height, true);
-		g.draw3DRect(rcRight.x,rcRight.y,rcRight.width,rcRight.height, true);
-		g.draw3DRect(rcDown.x,rcDown.y,rcDown.width,rcDown.height, true);
+		//bg.fillOval(CENTER-2,CENTER-2,4,4); // center
+		//bg.dispose();
 	}
-	void drawSegment(int start, int arc)
+	
+	void DrawSegment(Graphics g, int start, int arc)
 		// draws a segment of the radar
 	{
+		//Graphics bg = img.getGraphics();
 		// delete old segment marker
-		bg.setColor(BG_COLOR);
-		bg.drawLine(CENTER,CENTER, CENTER+(int)(2*RADIUS*Math.cos(angle*Math.PI/180)), CENTER-(int)(2*RADIUS*Math.sin(angle*Math.PI/180)));
+		g.setColor(BG_COLOR);
+		g.drawLine(CENTER,CENTER, CENTER+(int)(2*RADIUS*Math.cos(angle*Math.PI/180)), CENTER-(int)(2*RADIUS*Math.sin(angle*Math.PI/180)));
 		// delete previous contents
-		bg.fillArc(LEFT,TOP,WIDTH,HEIGHT,start,arc+1);
+		g.fillArc(LEFT,TOP,WIDTH,HEIGHT,start,arc+1);
 		// draw new segment marker
-		bg.setColor(COLOR);
+		g.setColor(COLOR);
 		angle = start+arc+1;
-		bg.drawLine(
+		g.drawLine(
 			CENTER,
 			CENTER,
 			CENTER+(int)(2*RADIUS*Math.cos(angle*Math.PI/180)),
 			CENTER-(int)(2*RADIUS*Math.sin(angle*Math.PI/180)));
-		repaint(); // TODO: Maybe use timeout?
 	}
-	void drawObject(int x, int y, int size)
+	
+	void DrawObject(Graphics g, int x, int y, int size)
 	{
-		bg.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
-		System.out.println("object drawn");
+		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
+		//System.out.println("object drawn");
 		//g.drawOval(LEFT+x*SCALE,TOP+y*SCALE,size,size); // putPixel
-		//g.drawLine(LEFT+x*SCALE,TOP+y*SCALE,LEFT+x*SCALE,TOP+y*SCALE);
-		repaint(); // TODO: Maybe use timeout?
+		g.drawLine(LEFT+x*SCALE,TOP+y*SCALE,LEFT+x*SCALE,TOP+y*SCALE);
 	}
+	
 	public void paint(Graphics g) 
 	{
 		// simply copy the off screen buffer to the window
 		g.drawImage(img,insets().left+1,insets().top+1,null);
 	}
 
+	public void doDrawSegment(Radar _radar, int _start, int _arc, Polygon _pol) {
+		DrawSegment(bg, _start, _arc);
+		
+		bg.drawPolygon(_pol);
+		
+		repaint();
+	}
+	
+	public void doDrawObject(Radar _radar, int _x, int _y, int _size) { 
+		DrawObject(bg, _x, _y, _size);
+	}
+	
 	public void update(Graphics  g)
 	{
-		// don't clear the background
 		paint(g);
 	}
-	public void moveRadar(int dx, int dy)
-	{
-		radar.setPosition(
-			new Point(
-				radar.getPosition().x + dx,
-				radar.getPosition().y + dy
-			)
-		);
-	}
-	public void mousePressed( MouseEvent e ) 
-	{
-		Point pt = e.getPoint();
-		pt.translate(-getInsets().left,-getInsets().top);
-		// up
-		if (rcUp.contains(pt))
-		{
-			moveRadar(0,-5);
-		}
-		else if (rcLeft.contains(pt))
-		{
-			moveRadar(-5,0);
-		}
-		else if (rcRight.contains(pt))
-		{
-			moveRadar(5,0);
-		}
-		else if (rcDown.contains(pt))
-		{
-			moveRadar(0,5);
-		}
-	}
-	public void mouseReleased( MouseEvent e ) {}
-	public void mouseClicked( MouseEvent e ) {}
-	public void mouseEntered( MouseEvent e ) {}
-	public void mouseExited( MouseEvent e ) {}
 }
 
 
