@@ -1,87 +1,242 @@
-// Game object. Has behaviour. Does not know how to draw
-// itself, but has a reference to a Visual;
+/*
+ *  GameObject.java
+ */
+
+/**
+ * Game object. Has behaviour. Does not know how to draw
+ * itself, but has a reference to a Visual;
+ *
+ *@created    5 november 2002
+ */
 interface GameObject {
+	/**
+	 *  Gets the position of the GameObject object
+	 *
+	 *@return    The position value
+	 */
 	FloatPoint getPosition();
-	void  setPosition(FloatPoint _position);
+
+
+	/**
+	 *  Sets the position of the GameObject object
+	 *
+	 *@param  _position  The new position value
+	 */
+	void setPosition(FloatPoint _position);
+
+
+	/**
+	 *  Sets the name of the GameObject object
+	 *
+	 *@param  _name  The new name value
+	 */
 	void setName(String _name);
+
+
+	/**
+	 *  Gets the name of the GameObject object
+	 *
+	 *@return    The name value
+	 */
 	String getName();
 }
 
+
+/**
+ *  Base implementation of a GameObject
+ *
+ *@created    5 november 2002
+ */
 class BaseGameObject implements GameObject {
 	GameMap mMap;
 	FloatPoint mPosition;
 	String mName;
 
+
+	/**
+	 *  Constructor for the BaseGameObject object
+	 *
+	 *@param  _map       Description of the Parameter
+	 *@param  _position  Description of the Parameter
+	 */
 	BaseGameObject(GameMap _map, java.awt.Point _position) {
-		this( _map, _position.x, _position.y );
+		this(_map, _position.x, _position.y);
 	}
-	
+
+
+	/**
+	 *  Constructor for the BaseGameObject object
+	 *
+	 *@param  _name      Description of the Parameter
+	 *@param  _map       Description of the Parameter
+	 *@param  _position  Description of the Parameter
+	 */
 	BaseGameObject(String _name, GameMap _map, java.awt.Point _position) {
-		this(_name, _map, _position.x, _position.y );
+		this(_name, _map, _position.x, _position.y);
 	}
-	
+
+
+	/**
+	 *  Constructor for the BaseGameObject object
+	 *
+	 *@param  _map  Description of the Parameter
+	 *@param  x     Description of the Parameter
+	 *@param  y     Description of the Parameter
+	 */
 	BaseGameObject(GameMap _map, int x, int y) {
 		this(null, _map, x, y);
 	}
-	
+
+
+	/**
+	 *  Constructor for the BaseGameObject object
+	 *
+	 *@param  _name  Description of the Parameter
+	 *@param  _map   Description of the Parameter
+	 *@param  x      Description of the Parameter
+	 *@param  y      Description of the Parameter
+	 */
 	BaseGameObject(String _name, GameMap _map, int x, int y) {
 		mName = _name;
 		mMap = _map;
 		mPosition = new FloatPoint(x, y);
 		setPosition(mPosition);
 	}
-	
+
+
+	/**
+	 *  Gets the position attribute of the BaseGameObject object
+	 *
+	 *@return    The position value
+	 */
 	public FloatPoint getPosition() {
 		return mPosition;
 	}
-	
+
+
+	/**
+	 *  Sets the position attribute of the BaseGameObject object
+	 *
+	 *@param  _position  The new position value
+	 */
 	public void setPosition(FloatPoint _position) {
 		mMap.moveObject(this, getPosition(), _position);
 		//mPosition.move(_position.x, _position.y);
 		mPosition = _position;
 	}
-	
+
+
+	/**
+	 *  Sets the name attribute of the BaseGameObject object
+	 *
+	 *@param  _name  The new name value
+	 */
 	public void setName(String _name) {
 		mName = _name;
 	}
-	
+
+
+	/**
+	 *  Gets the name attribute of the BaseGameObject object
+	 *
+	 *@return    The name value
+	 */
 	public String getName() {
 		return mName;
 	}
-} // BaseGameObject
-
-class GameObjectDecorator
-	implements GameObject
-//
-// A GameObjectDecorator extends the behavior of a game
-// object. This base decorator just forwards all behavior
-// to it's base, you should subclass this class and override
-// specific methods to make it useful.
-//
-// if you just got a hammer, everything looks like a nail.
-// kortom: ik moet zo nodig alles met patterns doen....
-//
-{
-	GameObject base;
-
-	GameObjectDecorator(GameObject _base) { base = _base; }
-	public FloatPoint getPosition(){ return base.getPosition(); }
-	public void  setPosition(FloatPoint _position) { base.setPosition(_position); }
-	public void setName(String _name) { base.setName(_name); }
-	public String getName() { return base.getName(); }
 }
 
+
+/**
+ *  A GameObjectDecorator extends the behavior of a game
+ *  object. This base decorator just forwards all behavior
+ *  to it's base, you should subclass this class and override
+ *  specific methods to make it useful.
+ *
+ *  if you just got a hammer, everything looks like a nail.
+ *  kortom: ik moet zo nodig alles met patterns doen....
+ *
+ *@created    5 november 2002
+ */
+class GameObjectDecorator implements GameObject {
+	GameObject base;
+
+
+	/**
+	 *  Constructor for the GameObjectDecorator object
+	 *
+	 *@param  _base  Description of the Parameter
+	 */
+	GameObjectDecorator(GameObject _base) {
+		base = _base;
+	}
+
+
+	/**
+	 *  Gets the position attribute of the GameObjectDecorator object
+	 *
+	 *@return    The position value
+	 */
+	public FloatPoint getPosition() {
+		return base.getPosition();
+	}
+
+
+	/**
+	 *  Sets the position attribute of the GameObjectDecorator object
+	 *
+	 *@param  _position  The new position value
+	 */
+	public void setPosition(FloatPoint _position) {
+		base.setPosition(_position);
+	}
+
+
+	/**
+	 *  Sets the name attribute of the GameObjectDecorator object
+	 *
+	 *@param  _name  The new name value
+	 */
+	public void setName(String _name) {
+		base.setName(_name);
+	}
+
+
+	/**
+	 *  Gets the name attribute of the GameObjectDecorator object
+	 *
+	 *@return    The name value
+	 */
+	public String getName() {
+		return base.getName();
+	}
+}
+
+
+/**
+ *  Description of the Class
+ *
+ *@created    5 november 2002
+ */
 class RandomGameObjectMover extends GameObjectDecorator
-	implements TimerReceiver
-{
+		 implements TimerReceiver {
+
+
 	int interval = 4;
 	int speed = 1;
 	TimerTrigger trigger;
 	java.awt.Point direction;
 	Universe game;
 
-	RandomGameObjectMover(GameObject _base, Universe _game, int _interval)
-	{
+
+	/**
+	 *  Constructor for the RandomGameObjectMover object
+	 *
+	 *@param  _base      Description of the Parameter
+	 *@param  _game      Description of the Parameter
+	 *@param  _interval  Description of the Parameter
+	 */
+	RandomGameObjectMover(GameObject _base, Universe _game, int _interval) {
 		super(_base);
 		game = _game;
 		interval = _interval;
@@ -90,53 +245,73 @@ class RandomGameObjectMover extends GameObjectDecorator
 		// add to heartbeat
 		trigger = new TimerTrigger(this);
 		trigger.setRepeat(true);
-		game.heartBeat.addRel ( trigger, interval );
+		game.heartBeat.addRel(trigger, interval);
 	}
-	protected void finalize() 
-	{
+
+
+	/**
+	 *  Description of the Method
+	 */
+	protected void finalize() {
 		game.heartBeat.remove(trigger);
 	}
 
-	public void doTimer(TimerTrigger tt) 
-	{
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  tt  Description of the Parameter
+	 */
+	public void doTimer(TimerTrigger tt) {
 		// move the object
 		// determine new direction
-		if (Math.random() < 0.05)
-		{
+		if (Math.random() < 0.05) {
 			if (Math.random() < 0.50) {
 				double r = Math.random();
-				if (r < 0.33)
+				if (r < 0.33) {
 					direction.x = -speed;
-				else if (r > 0.66)
+				} else if (r > 0.66) {
 					direction.x = 0;
-				else
+				} else {
 					direction.x = speed;
+				}
 			}
 			if (Math.random() < 0.50) {
 				double r = Math.random();
-				if (r < 0.33)
+				if (r < 0.33) {
 					direction.y = -speed;
-				else if (r > 0.66)
+				} else if (r > 0.66) {
 					direction.y = 0;
-				else
+				} else {
 					direction.y = speed;
+				}
 			}
 		}
-		if (Math.random() < 0.50)
-		{
+		if (Math.random() < 0.50) {
 			FloatPoint pos = new FloatPoint(base.getPosition());
 			pos.x += direction.x;
-			if (pos.x < 0)
+			if (pos.x < 0) {
 				pos.x = 0;
-			else if (pos.x >= game.map.mMapWidth)
-				pos.x = (int)game.map.mMapWidth-1;
+			} else if (pos.x >= game.map.mMapWidth) {
+				pos.x = (int)game.map.mMapWidth - 1;
+			}
 			pos.y += direction.y;
-			if (pos.y < 0)
+			if (pos.y < 0) {
 				pos.y = 0;
-			else if (pos.y >= game.map.mMapHeight)
-				pos.y = (int)game.map.mMapHeight-1;
+			} else if (pos.y >= game.map.mMapHeight) {
+				pos.y = (int)game.map.mMapHeight - 1;
+			}
 			base.setPosition(pos);
 		}
 	}
 
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: GameObject.java,v $
+ *  Revision 1.6  2002/11/05 12:50:39  quintesse
+ *  Added Javadoc comments.
+ *
+ */
+
