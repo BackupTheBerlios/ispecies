@@ -3,8 +3,6 @@
 */
 
 import java.io.*;
-import java.util.*;
-import java.awt.*;
 
 /**
  *  Umbrella object for all game-related objects and data
@@ -44,7 +42,6 @@ class Universe extends Thread {
 		rm.registerImage(IMG_DOT, "dot.gif");
 		map = readMap("Terrain.map");
 	}
-
 
 	/**
 	 *  Returns a reference to the map
@@ -90,7 +87,7 @@ class Universe extends Thread {
 		while (true) {
 			try {
 				sleep(50);
-				// 50 msec per tick = 20 ticks per sec
+				// 50 msec per tick = 20 frames per sec
 				heartBeat.tick();
 			} catch (InterruptedException e) {
 				Logger.log("ServerUniverse: somebody woke me, " + e);
@@ -103,6 +100,10 @@ class Universe extends Thread {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Universe.java,v $
+ *  Revision 1.5  2003/06/05 15:09:02  puf
+ *  Removed some unused imports.
+ *  Fixed a comment.
+ *
  *  Revision 1.4  2002/11/05 15:31:50  quintesse
  *  Using Logger.log() instead of System.out.writeln();
  *  Added Javadoc comments.
