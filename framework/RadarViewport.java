@@ -44,7 +44,7 @@ class Radar extends BaseGameObject
 		if (game != null)
 		{
 			game.heartBeat.addRel ( trigger, interval );
-			map = game.getMap().getRange(getPosition().x,getPosition().y,2*RADIUS,2*RADIUS);
+			map = game.getMap().getRange(getPosition().toPoint().x, getPosition().toPoint().y, 2*RADIUS, 2*RADIUS);
 		}
 	}
 
@@ -59,14 +59,16 @@ class Radar extends BaseGameObject
 		// alternative ObjectInsideSegment algorithm
 		// create a polygon approximation of the segment
 		pol = new Polygon();
-		pol.addPoint(getPosition().x,getPosition().y);
+		pol.addPoint(getPosition().toPoint().x, getPosition().toPoint().y);
 		pol.addPoint(
-			getPosition().x + (int)(RADIUS * Math.cos( angle * Math.PI / 180 )),
-			getPosition().y - (int)(RADIUS * Math.sin( angle * Math.PI / 180 )) );
+			getPosition().toPoint().x + (int)(RADIUS * Math.cos( angle * Math.PI / 180 )),
+			getPosition().toPoint().y - (int)(RADIUS * Math.sin( angle * Math.PI / 180 ))
+		);
 		tmpAngle = angle+segment; // may be >360 but that's ok
 		pol.addPoint(
-			getPosition().x + (int)(RADIUS * Math.cos( tmpAngle * Math.PI / 180 )),
-			getPosition().y - (int)(RADIUS * Math.sin( tmpAngle * Math.PI / 180 )) );
+			getPosition().toPoint().x + (int)(RADIUS * Math.cos( tmpAngle * Math.PI / 180 )),
+			getPosition().toPoint().y - (int)(RADIUS * Math.sin( tmpAngle * Math.PI / 180 )) 
+		);
 		//pol.addPoint(center.x,center.y); // closing point
 		// the above is an approximation of a pie slice. the circular
 		// part of the slice is not included in the polygon.
@@ -80,7 +82,7 @@ class Radar extends BaseGameObject
 			//if (pol.contains(object.getPosition().x, object.getPosition().y))
 				// Is it metal?
 				//if (object instanceof RadarVisible)
-					vp.doDrawObject(this, object.getPosition().x - getPosition().x, object.getPosition().y - getPosition().y, 1);
+					vp.doDrawObject(this, object.getPosition().toPoint().x - getPosition().toPoint().x, object.getPosition().toPoint().y - getPosition().toPoint().y, 1);
 					// vp.doDrawObject(this, object.getPosition().x, object.getPosition().y, ((RadarVisible)object).getReflectivity())
 		}
 
