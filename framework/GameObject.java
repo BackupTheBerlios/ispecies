@@ -2,6 +2,8 @@
  *  GameObject.java
  */
 
+import util.*;
+
 /**
  * Game object. Has behaviour. Does not know how to draw
  * itself, but has a reference to a Visual;
@@ -39,6 +41,9 @@ interface GameObject {
 	 *@return    The name value
 	 */
 	String getName();
+
+
+	public void terminate();
 }
 
 
@@ -60,7 +65,7 @@ class BaseGameObject implements GameObject {
 	 *@param  _position  Description of the Parameter
 	 */
 	BaseGameObject(GameMap _map, java.awt.Point _position) {
-		this(_map, _position.x, _position.y);
+		this(null, _map, _position.x, _position.y);
 	}
 
 
@@ -80,11 +85,11 @@ class BaseGameObject implements GameObject {
 	 *  Constructor for the BaseGameObject object
 	 *
 	 *@param  _map  Description of the Parameter
-	 *@param  x     Description of the Parameter
-	 *@param  y     Description of the Parameter
+	 *@param  _x    Description of the Parameter
+	 *@param  _y    Description of the Parameter
 	 */
-	BaseGameObject(GameMap _map, int x, int y) {
-		this(null, _map, x, y);
+	BaseGameObject(GameMap _map, int _x, int _y) {
+		this(null, _map, _x, _y);
 	}
 
 
@@ -93,14 +98,20 @@ class BaseGameObject implements GameObject {
 	 *
 	 *@param  _name  Description of the Parameter
 	 *@param  _map   Description of the Parameter
-	 *@param  x      Description of the Parameter
-	 *@param  y      Description of the Parameter
+	 *@param  _x     Description of the Parameter
+	 *@param  _y     Description of the Parameter
 	 */
-	BaseGameObject(String _name, GameMap _map, int x, int y) {
+	BaseGameObject(String _name, GameMap _map, int _x, int _y) {
 		mName = _name;
 		mMap = _map;
-		mPosition = new FloatPoint(x, y);
-		setPosition(mPosition);
+		mPosition = null;
+		setPosition(new FloatPoint(_x, _y));
+		Logger.log("Created new GameObject: " + this);
+	}
+
+
+	public void terminate() {
+		setPosition(null);
 	}
 
 
@@ -144,6 +155,21 @@ class BaseGameObject implements GameObject {
 	public String getName() {
 		return mName;
 	}
+	
+	public String toString() {
+		String name = getName();
+		if (name == null) {
+			name = super.toString();
+		}
+		String pos;
+		if (getPosition() != null) {
+			pos = getPosition().x + ", " + getPosition().y;
+		} else {
+			pos = "<nowhere>";
+		}
+		return "'" + name + "' (" + getClass().getName() + ") @ (" + pos + ")";
+
+	}
 }
 
 
@@ -169,6 +195,11 @@ class GameObjectDecorator implements GameObject {
 	 */
 	GameObjectDecorator(GameObject _base) {
 		base = _base;
+	}
+
+
+	public void terminate() {
+		base.terminate();
 	}
 
 
@@ -310,6 +341,11 @@ class RandomGameObjectMover extends GameObjectDecorator
 /*
  *  Revision history, maintained by CVS.
  *  $Log: GameObject.java,v $
+ *  Revision 1.7  2002/11/07 00:51:39  quintesse
+ *  Added terminate() to GameObject interface to handle clean-up.
+ *  Implemented basic clean-up for existing GameObject classes.
+ *  Adjusted naming to be more according to our style.
+ *
  *  Revision 1.6  2002/11/05 12:50:39  quintesse
  *  Added Javadoc comments.
  *
