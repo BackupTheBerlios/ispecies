@@ -10,11 +10,11 @@ import util.*;
 /**
  *
  * <br>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class PathFinderDirector implements Director {
+public class PathFinderDirector implements Director, ObjectListener {
 	/** The version number of this file as determined by the RCS. */
-	public static final String RCS_VERSION = "$Revision: 1.2 $";
+	public static final String RCS_VERSION = "$Revision: 1.3 $";
 	
 	public static int[][] FLAGMAP = null;
 
@@ -169,11 +169,13 @@ public class PathFinderDirector implements Director {
 		*/
 	}
 	
-	// Called to indicate that the game object has died at [_pos] on [_map]
-	public void onObjectDied(FloatPoint _pos, GameMap _map) {
-		Point point = _pos.toPoint();
-		Point parcelposition = _map.gameXYToParcelXY(point.x, point.y);
-		getFLAGMAP(_map)[parcelposition.x][parcelposition.y]++;
+	// Called to indicate that the game object has died
+	public void died(ObjectEvent _e) {
+		BaseGameObject src = (BaseGameObject)_e.getSource();
+		Point point = src.getPosition().toPoint();
+		GameMap map = src.getMap();
+		Point parcelposition = map.gameXYToParcelXY(point.x, point.y);
+		getFLAGMAP(map)[parcelposition.x][parcelposition.y]++;
 	}
 
 	// determines the cost for an object at [_pos] to move in [_dst]
@@ -197,6 +199,9 @@ public class PathFinderDirector implements Director {
 
 /* Revision history, maintained by VSS.
  * $Log: PathFinderDirector.java,v $
+ * Revision 1.3  2002/11/11 10:49:39  quintesse
+ * The PathFinderDirector now listens for the GameObject's died() event.
+ *
  * Revision 1.2  2002/11/11 09:06:25  quintesse
  * Missing import for FloatPoint.
  *
