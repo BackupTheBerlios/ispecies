@@ -11,8 +11,7 @@ public class MapBuilder {
 	}
 	
 	GameMap readGameMap(String _sFilename) throws FileNotFoundException {		
-		return readGameMap(new DataInputStream(new FileInputStream("res/maps/" + _sFilename)));
-		//return readGameMap(new DataInputStream(getClass().getResourceAsStream("res/maps/" + _sFilename)));
+		return readGameMap(new DataInputStream(ResourceManager.readFile("res/maps/" + _sFilename)));
 	}
 	
 	GameMap readGameMap(DataInputStream _in) {
@@ -46,7 +45,7 @@ public class MapBuilder {
 			// read persisted game objects
 		}
 		catch(IOException e) {
-			System.out.println("Invalid map file format");
+			Logger.log("Invalid map file format");
 		}
 		return (GameMap)map;
 	}
@@ -94,15 +93,14 @@ public class MapBuilder {
 		_fl.println("#");
 		_fl.println("# Resources");
 		_fl.println("#");
-		for (Enumeration e = _rm.getTileSets().keys(); e.hasMoreElements(); ) {
+		for (Enumeration e = _rm.getTileSetIds(); e.hasMoreElements(); ) {
 			int nId = ((Integer)e.nextElement()).intValue();
 			_fl.println("Tileset " + nId + " " + _rm.getTileSetName(nId));
 		}
 		_fl.println("end");
 	}
 	
-	public void readParcelMap(StreamTokenizer _st, ParcelMap _map)
-	throws IOException {
+	public void readParcelMap(StreamTokenizer _st, ParcelMap _map) throws IOException {
 		_st.eolIsSignificant(false);
 		_st.commentChar('#');
 		for (int y=0; y < _map.getHeight(); y++) {
@@ -140,3 +138,15 @@ public class MapBuilder {
 		} // for y
 	}
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: MapBuilder.java,v $
+ *  Revision 1.6  2002/11/05 15:37:14  quintesse
+ *  Now using Logger.log() instead of System.out.println();
+ *  Added CVS history section.
+ *  Now using ResourceManager to read the map file.
+ *  Some code changes because of changes to the interface of the ResourceManager.
+ *
+ */
+
