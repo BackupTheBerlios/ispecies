@@ -462,7 +462,7 @@ class IsometricEditViewport extends IsometricViewport implements KeyListener, Mo
 							// TODO: Wrap if t.getShape()+1 >= shapeCount
 							break;
 						default:
-							if ((e.getModifiers() & e.CTRL_MASK) != 0) {
+							if ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
 								if (e.getKeyCode() == KeyEvent.VK_F) {
 									for (int x = 0; x < mSource.mMap.getParcelMap().getWidth(); x++) {
 										for (int y = 0; y < mSource.mMap.getParcelMap().getWidth(); y++) {
@@ -491,7 +491,7 @@ class IsometricEditViewport extends IsometricViewport implements KeyListener, Mo
 							}
 							break;
 		}
-		Logger.log(e.getKeyText(e.getKeyCode()));
+		Logger.log(KeyEvent.getKeyText(e.getKeyCode()));
 	}
 
 
@@ -582,6 +582,9 @@ class IsometricEditViewport extends IsometricViewport implements KeyListener, Mo
 /*
  *  Revision history, maintained by CVS.
  *  $Log: IsometricViewport.java,v $
+ *  Revision 1.5  2003/06/05 15:02:07  puf
+ *  Fixed some references.
+ *
  *  Revision 1.4  2002/11/07 00:56:53  quintesse
  *  Changed deprecated calls to method insets() with getInsets().
  *
