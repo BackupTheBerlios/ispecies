@@ -35,13 +35,16 @@ public final class StringHelper {
 	 * @return the String representation of [_f].
 	 */
 	public static final String toString(double _f) {
-		return Integer.toString((int)_f)+"."+Integer.toString((int)(_f * 100 % 100));
+		return Integer.toString((int)_f)+"."+Integer.toString((int)Math.abs(_f * 100 % 100));
 	}	
 }
 
 /*
  * Revision history, maintained by CVS.
  * $Log: StringHelper.java,v $
+ * Revision 1.2  2003/06/05 14:17:15  puf
+ * Now uses abs for the fractional part in toString(double).
+ *
  * Revision 1.1  2002/11/07 01:31:49  quintesse
  * Moved from main package to util.*
  *
