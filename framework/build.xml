@@ -1,0 +1,38 @@
+<project name="iSpecies" default="build" basedir=".">
+  <target name="init">
+      <tstamp/>
+  </target>
+
+  <property name="build" value="${basedir}/build" />
+  <property name="context" value="iSpecies" />
+  <property environment="myenv" />
+
+  <path id="classpath">
+    <fileset dir="lib" includes="*.jar"/>
+    <pathelement location="${build}/classes"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="${build}" />
+    <delete file="iSpecies.jar" />
+  </target>
+
+  <target name="prepare" depends="init" description="Create build directories.">
+    <mkdir dir="${build}" />
+    <mkdir dir="${build}/classes" />
+    <mkdir dir="${build}/lib" />
+  </target>
+
+  <target name="compile" depends="prepare" description="Compile app Java files">
+    <javac srcdir="${basedir}" destdir="${build}/classes">
+    	<include name="**/*.java" />
+     	<classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <target name="build" depends="compile" description="Build JAR file">
+    <jar jarfile="${basedir}/iSpecies.jar" basedir="${build}"/>
+  </target>
+  
+</project>
+
