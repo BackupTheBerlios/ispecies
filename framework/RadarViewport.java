@@ -17,7 +17,7 @@ class Radar extends BaseGameObject
 
 	public final static int RADIUS = 50; // 100x100 game units
 
-	Radar( Universe _game ) 
+	Radar( Universe _game )
 	{
 		super (_game.getMap(),
 			new Point(
@@ -35,7 +35,7 @@ class Radar extends BaseGameObject
 		// no universe yet
 		this(null);
 	}
-	
+
 	public void OnUniverse(Universe _universe)
 	{
 		if (game != null)
@@ -48,10 +48,10 @@ class Radar extends BaseGameObject
 		}
 	}
 
-	public void doTimer(TimerTrigger tt) 
+	public void doTimer(TimerTrigger tt)
 	{
-		int			tmpAngle, 
-					distance, 
+		int			tmpAngle,
+					distance,
 					dx, dy;
 		GameObject	object;
 		Polygon		pol;
@@ -120,7 +120,7 @@ class RadarViewport extends Frame
 
 	long lastTime;
 
-	RadarViewport( Universe _game, Radar _radar ) 
+	RadarViewport( Universe _game, Radar _radar )
 	{
 		super("Radar");
 		OnUniverse(_game);
@@ -135,30 +135,30 @@ class RadarViewport extends Frame
 		bg = img.getGraphics();
 		DrawOutline(bg);
 		// start loading of the 'dot'
-		dot = Toolkit.getDefaultToolkit().getImage("dot.gif");
+		dot = _game.rm.getImage(_game.IMG_DOT);
 		lastTime = System.currentTimeMillis();
 	}
-	
+
 	RadarViewport( Universe _game )
 	{
 		this (_game,null);
 	}
-	
+
 	RadarViewport ()
 	{
 		this(null,null);
 	}
-	
+
 	protected void finalize()
 	{
 		bg.dispose(); // dispose of the Graphics
 	}
-	
+
 	public void OnUniverse(Universe _universe)
 	{
 		game = _universe;
 	}
-	
+
 	public void OnRadar(Radar _radar)
 	{
 		if (radar != null)
@@ -182,7 +182,7 @@ class RadarViewport extends Frame
 		//bg.fillOval(CENTER-2,CENTER-2,4,4); // center
 		//bg.dispose();
 	}
-	
+
 	void DrawSegment(Graphics g, int start, int arc)
 		// draws a segment of the radar
 	{
@@ -201,7 +201,7 @@ class RadarViewport extends Frame
 			CENTER+(int)(2*RADIUS*Math.cos(angle*Math.PI/180)),
 			CENTER-(int)(2*RADIUS*Math.sin(angle*Math.PI/180)));
 	}
-	
+
 	void DrawObject(Graphics g, int x, int y, int size)
 	{
 		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
@@ -209,8 +209,8 @@ class RadarViewport extends Frame
 		//g.drawOval(LEFT+x*SCALE,TOP+y*SCALE,size,size); // putPixel
 		g.drawLine(LEFT+x*SCALE,TOP+y*SCALE,LEFT+x*SCALE,TOP+y*SCALE);
 	}
-	
-	public void paint(Graphics g) 
+
+	public void paint(Graphics g)
 	{
 		// simply copy the off screen buffer to the window
 		g.drawImage(img,insets().left+1,insets().top+1,null);
@@ -218,16 +218,16 @@ class RadarViewport extends Frame
 
 	public void doDrawSegment(Radar _radar, int _start, int _arc, Polygon _pol) {
 		DrawSegment(bg, _start, _arc);
-		
+
 		bg.drawPolygon(_pol);
-		
+
 		repaint();
 	}
-	
-	public void doDrawObject(Radar _radar, int _x, int _y, int _size) { 
+
+	public void doDrawObject(Radar _radar, int _x, int _y, int _size) {
 		DrawObject(bg, _x, _y, _size);
 	}
-	
+
 	public void update(Graphics  g)
 	{
 		paint(g);
