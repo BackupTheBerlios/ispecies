@@ -1,19 +1,28 @@
+
 import java.io.*;
 import java.awt.*;
+import java.util.*;
 
 public class MapBuilder
 {
-	Map m_map;
-		
-	GameMap readGameMap (String _filename)
+	ResourceManager m_rm;
+	
+	MapBuilder(ResourceManager _rm) {
+		m_rm = _rm;
+	}
+	
+	GameMap readGameMap(String _sFilename)
 		throws FileNotFoundException
 	{
-		return readGameMap(new DataInputStream(new FileInputStream(_filename)));
+		return readGameMap(new DataInputStream(new FileInputStream(_sFilename)));
 	}
-	GameMap readGameMap (DataInputStream _in)
+	
+	GameMap readGameMap(DataInputStream _in)
 	{
 		long width, height;
 		int  pwidth, pheight;
+		Map map = null;
+		
 		try 
 		{
 			StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(_in)));
@@ -28,54 +37,124 @@ public class MapBuilder
 			pwidth = (int)st.nval;
 			st.nextToken();
 			pheight = (int)st.nval;
+
 			// create GameMap
-			m_map = new GameMap(width,height,pwidth,pheight);
+			map = new GameMap(width, height, pwidth, pheight);
+
+			// read resource table
+			readResources(st, m_rm);
+			
 			// read parcel map
-			readParcelMap(st);
-			// read height map
+			readParcelMap(st, map.getParcelMap());
+			
 			// read persisted game objects
 		}
 		catch(IOException e)
 		{
 			System.out.println("Invalid map file format");
 		}
-		return (GameMap)m_map;
-	}
-	public void readParcelMap (StreamTokenizer _st) 
-		throws IOException
-	{
-		Terrain grass = new GrassTerrain();
-		grass.setVisual(new StaticVisual(0));
-		Terrain water = new WaterTerrain();
-		water.setVisual(new StaticVisual(1));
-		Terrain desert= new DesertTerrain();
-		desert.setVisual(new StaticVisual(2));
-		
-		_st.eolIsSignificant(false);
-		_st.commentChar('#');
-		for (int x=0; x < m_map.getParcelMap().getWidth(); x++)
-		{
-			for (int y=0; y < m_map.getParcelMap().getHeight(); y++)
-			{
-				if (_st.nextToken() == StreamTokenizer.TT_NUMBER) {
-					int n = (int)_st.nval; 
-					switch (n) {
-						case 0: {
-							m_map.getParcelMap().getParcel(x,y).setTerrain( grass );
-							break;
-						}
-						case 1: {
-							m_map.getParcelMap().getParcel(x,y).setTerrain ( water );
-							break;
-						}
-						case 2: {
-							m_map.getParcelMap().getParcel(x,y).setTerrain ( desert );
-							break;
-						}
-					} // switch
-				} // for x
-			} // for y
-		} 
+		return (GameMap)map;
 	}
 	
+	void writeGameMap(String _sFilename, GameMap _game)
+		throws IOException
+	{ 
+		PrintWriter fl = new PrintWriter(new BufferedWriter(new FileWriter(_sFilename)));
+		writeGameMap(fl, _game);
+		fl.flush();
+		fl.close();
+	}
+	
+	public void writeGameMap(PrintWriter _fl, GameMap _game)
+		throws IOException
+	{
+
+		_fl.println("# width and height of the map in game units");
+		_fl.println(_game.getWidth() + " " + _game.getHeight());
+		_fl.println("# width and height of a parcel");
+		_fl.println(_game.mParcelWidth + " " + _game.mParcelHeight);
+		
+		writeResources(_fl, m_rm);
+		
+		writeParcelMap(_fl, _game.getParcelMap());
+	}
+	
+	public void readResources(StreamTokenizer _st, ResourceManager _rm)
+		throws IOException
+	{
+		_st.eolIsSignificant(false);
+		_st.commentChar('#');
+		while (_st.nextToken() != StreamTokenizer.TT_EOF) {
+			if ((_st.ttype == StreamTokenizer.TT_WORD) && !_st.sval.equals("end")) {
+				if (_st.sval.equals("Tileset")) {
+					if (_st.nextToken() == StreamTokenizer.TT_NUMBER) {
+						int nId = (int)_st.nval; 
+						if (_st.nextToken() == StreamTokenizer.TT_WORD) {
+							String sName = _st.sval; 
+							_rm.addTileSet(nId, sName);
+						}
+					}
+				}
+			} else {
+				break;
+			}
+		}
+	}
+	
+	public void writeResources(PrintWriter _fl, ResourceManager _rm) {
+		_fl.println("#");
+		_fl.println("# Resources");
+		_fl.println("#");
+		for (Enumeration e = _rm.getTileSets().keys(); e.hasMoreElements(); ) {
+			int nId = ((Integer)e.nextElement()).intValue();
+			_fl.println("Tileset " + nId + " " + _rm.getTileSetName(nId));
+		}
+		_fl.println("end");
+	}
+	
+	public void readParcelMap(StreamTokenizer _st, ParcelMap _map) 
+		throws IOException
+	{
+		_st.eolIsSignificant(false);
+		_st.commentChar('#');
+		for (int y=0; y < _map.getHeight(); y++)
+		{
+			for (int x=0; x < _map.getWidth(); x++)
+			{
+				if (_st.nextToken() == StreamTokenizer.TT_NUMBER) {
+					int nType = (int)_st.nval; 
+					if (_st.nextToken() == StreamTokenizer.TT_WORD) {
+						int nShape = (int)_st.sval.charAt(0) - (int)'a';
+						int nHeight = Integer.valueOf(_st.sval.substring(1)).intValue();
+						Parcel p = _map.getParcel(x,y);
+						p.setBaseHeight(nHeight);
+						p.setTerrain( Terrain.getShapedTerrain(m_rm, nType, nShape) );
+					}
+				}
+			} // for x
+		} // for y
+	}
+	
+	public void writeParcelMap(PrintWriter _fl, ParcelMap _map) 
+		throws IOException
+	{
+		_fl.println("#");
+		_fl.println("# ParcelMap (Type/Shape/Height)");
+		_fl.println("#");
+		for (int y=0; y < _map.getHeight(); y++)
+		{
+			for (int x=0; x < _map.getWidth(); x++)
+			{
+				Parcel p = _map.getParcel(x,y);
+				Terrain t = p.getTerrain();
+				String s = String.valueOf(t.getTileSet()) + (char)(t.getShape() + (int)'a') + String.valueOf(p.getBaseHeight());
+				if (x == 0) {
+					_fl.print(s);
+				} else {
+					_fl.print(" " + s);
+				}
+			} // for x
+			_fl.println("");
+		} // for y
+	}
 }
