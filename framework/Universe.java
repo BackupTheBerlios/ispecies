@@ -14,23 +14,26 @@ class Universe extends Thread
 	protected GameMap			map;
 	protected ResourceManager	rm;
 
+	public final int IMG_DOT =	1;
+
 	public TimerTriggerPool	heartBeat; // counts game ticks, not real time
 
-	Universe() 
+	Universe()
 	{
 		heartBeat = new TimerTriggerPool();
 		rm = new ResourceManager();
+		rm.registerImage(IMG_DOT, "dot.gif");
 		map = readMap("Terrain.map");
 	}
 
-	GameMap getMap() { 
-		return map; 
+	GameMap getMap() {
+		return map;
 	}
-	
-	void setMap(GameMap _map) { 
-		map = _map; 
+
+	void setMap(GameMap _map) {
+		map = _map;
 	}
-	
+
 	GameMap readMap(String _mapFilename) {
 		try {
 			return new MapBuilder(rm).readGameMap("Terrain.map");
@@ -42,9 +45,9 @@ class Universe extends Thread
 		return null;
 	}
 
-	public void run() 
+	public void run()
 	{
-		while (true) 
+		while (true)
 		{
 			try
 			{
