@@ -79,7 +79,7 @@ public class Radar extends BaseGameObject implements TimerReceiver {
 	 *
 	 *@return    A reference to a map
 	 */
-	public MapView getMap() {
+	public MapView getRadarMap() {
 		return mMap;
 	}
 
@@ -151,6 +151,9 @@ public class Radar extends BaseGameObject implements TimerReceiver {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Radar.java,v $
+ *  Revision 1.2  2002/11/11 10:50:56  quintesse
+ *  Changed getMap() to getRadarMap() to avoid conflict with a method with the same name in BaseGameObject (and it is more logical there so decided to change this one).
+ *
  *  Revision 1.1  2002/11/07 01:39:13  quintesse
  *  Put Model and View in separate files
  *
