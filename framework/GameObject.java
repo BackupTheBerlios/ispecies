@@ -3,7 +3,6 @@
  */
 
 import java.util.*;
-import java.util.logging.*;
 
 import util.*;
 
@@ -84,8 +83,6 @@ interface GameObject {
  *@created    5 november 2002
  */
 class BaseGameObject implements GameObject {
-	static Logger mLogger = Logger.getLogger(BaseGameObject.class.getName());
-
 	GameMap mMap;
 	FloatPoint mPosition;
 	String mName;
@@ -105,7 +102,7 @@ class BaseGameObject implements GameObject {
 		mPosition = null;
 		setPosition(new FloatPoint(_x, _y));
 		mListeners = new ArrayList();
-		mLogger.info("Created new GameObject: " + this);
+		Logger.info("Created new GameObject: " + this);
 	}
 
 
@@ -454,6 +451,9 @@ class RandomGameObjectMover extends GameObjectDecorator
 /*
  *  Revision history, maintained by CVS.
  *  $Log: GameObject.java,v $
+ *  Revision 1.10  2003/06/05 14:43:34  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *
  *  Revision 1.9  2002/11/12 08:33:26  quintesse
  *  Now using official 1.4 JDK logging system.
  *
