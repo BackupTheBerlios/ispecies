@@ -3,8 +3,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import util.*;
-
 public class FramedViewportContainer
 		extends JFrame
 		implements ViewportContainer, WindowListener, ComponentListener, MouseListener, MouseMotionListener, TimerReceiver {
