@@ -205,11 +205,11 @@ public class TopPanel extends java.awt.Panel {
 	}//GEN-LAST:event_showIsometricBtnActionPerformed
 
 	private void showSatelliteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSatelliteBtnActionPerformed
-			new SatelliteViewport(game,new Satellite(game));
+			new FramedViewportContainer(game, new SatelliteViewport(new Satellite(game)));
 	}//GEN-LAST:event_showSatelliteBtnActionPerformed
 
 	private void showRadarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showRadarBtnActionPerformed
-		new RadarViewport(game, new Radar(game));
+		new FramedViewportContainer(game, new RadarViewport(new Radar(game)));
 	}//GEN-LAST:event_showRadarBtnActionPerformed
 	
 	
@@ -233,6 +233,9 @@ public class TopPanel extends java.awt.Panel {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: TopPanel.java,v $
+ *  Revision 1.7  2002/11/07 01:16:18  quintesse
+ *  Now using new Viewport/ViewContainer system for Radar and Satellite.
+ *
  *  Revision 1.6  2002/11/05 15:30:42  quintesse
  *  Using Logger.log() instead of System.out.writeln();
  *  Added CVS history section.
