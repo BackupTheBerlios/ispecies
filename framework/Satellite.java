@@ -4,105 +4,89 @@ import java.awt.event.*;
 import java.util.*;
 
 
-class Satellite
-	implements TimerReceiver
 // this class represents a Satellite above the map
-{
+class Satellite implements TimerReceiver {
 	Universe			game;
 	SatelliteViewport	vp;				// should be a vector, to handle multiple views on this Satellite
 	TimerTrigger		trigger;
 	int					interval = 25;	// number of heartbeats between updates
 	GameMap				map;			// satellite can see entire map
-
-	Satellite( Universe _game )
-	{
-		trigger = new TimerTrigger ( this );
+	
+	Satellite( Universe _game ) {
+		trigger = new TimerTrigger( this );
 		trigger.setRepeat(true);
 		OnUniverse(_game);
 		System.out.println("Satellite created");
 	}
-
-	Satellite ()
-	{
+	
+	Satellite() {
 		// no universe yet
 		this(null);
 	}
-
-	public void OnUniverse(Universe _universe)
-	{
+	
+	public void OnUniverse(Universe _universe) {
 		if (game != null)
 			game.heartBeat.remove(trigger);
 		game = _universe;
-		if (game != null)
-		{
+		if (game != null) {
 			map = game.getMap(); // can see the entire map
-			game.heartBeat.addRel ( trigger, interval );
+			game.heartBeat.addRel( trigger, interval );
 		}
 	}
-
-	public void doTimer(TimerTrigger tt)
-	{
+	
+	public void doTimer(TimerTrigger tt) {
 		vp.updateMap();
 	}
 }
 
 //class SatelliteViewport extends Viewport
-class SatelliteViewport extends Frame implements MouseListener, MouseMotionListener
-{
+class SatelliteViewport extends Frame implements MouseListener, MouseMotionListener {
 	// member variables
 	Image			img = null; // off screen buffer
 	Graphics		bg = null;
 	Universe		game;
 	Satellite		satellite;
 	double			fScaleX, fScaleY;
-
+	
 	// class constants
 	public final static int SCALE = 32; // size of a parcel in pixels
 	public final static int INSET = 5; // for 'dungeon dressing'
 	public final static Color BG_COLOR = Color.black;
-
-	SatelliteViewport( Universe _game, Satellite _Satellite )
-	{
+	
+	SatelliteViewport( Universe _game, Satellite _Satellite ) {
 		super("Satellite");
 		setBackground(BG_COLOR);
 		show();
 		OnUniverse  (_game);
-		OnSatellite (_Satellite);
-
+		OnSatellite(_Satellite);
+		
 		// determine the scale of things for mapping screen coordinates back to map coordinates later
 		fScaleX = (satellite.map.getWidth() / (SCALE * satellite.map.getParcelMap().getWidth()));
 		fScaleY = (satellite.map.getHeight() / (SCALE * satellite.map.getParcelMap().getHeight()));
-
+		
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
-
+		
 		System.out.println("SatelliteViewport created");
 	}
-	SatelliteViewport( Universe _game )
-	{
-		this (_game,null);
+	SatelliteViewport( Universe _game ) {
+		this(_game,null);
 	}
-	SatelliteViewport ()
-	{
+	SatelliteViewport() {
 		this(null,null);
 	}
-	protected void finalize()
-	{
+	protected void finalize() {
 		bg.dispose(); // dispose of the Graphics
 	}
-	public void OnUniverse(Universe _universe)
-	{
+	public void OnUniverse(Universe _universe) {
 		game = _universe;
 	}
-	public void OnSatellite(Satellite _satellite)
-	{
-		if (satellite != null)
-		{	// disconnect from old Satellite
+	public void OnSatellite(Satellite _satellite) {
+		if (satellite != null) {	// disconnect from old Satellite
 			satellite.vp = null;
 		}
 		satellite = _satellite;
-		if (satellite != null)
-		{	// connect to new Satellite
+		if (satellite != null) {	// connect to new Satellite
 			satellite.vp = this;
 			// resize to show entire view of satellite
 			setViewportSize(
@@ -111,24 +95,24 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 			);
 		}
 	}
-
-	public void setViewportSize(int _width, int _height)
-	{
+	
+	public void setViewportSize(int _width, int _height) {
 		setSize(
 			_width  + insets().left + insets().right,
 			_height + insets().top  + insets().bottom
 		);
 		// create an off screen buffer for drawing
-		if (bg != null) bg.dispose(); // free old one
+		if (bg != null) {
+			bg.dispose(); // free old one
+		}
 		img = createImage(_width,_height);
 		System.err.println("Create OSB of "+_width+"x"+_height);
 		bg  = img.getGraphics();
 		System.out.println("SatelliteViewport created");
 	}
-
-	void DrawParcelTerrain(Graphics g, int x, int y, int h, Terrain terrain)
-		// draws the terrain of a parcel
-	{
+	
+	// draws the terrain of a parcel
+	void DrawParcelTerrain(Graphics g, int x, int y, int h, Terrain terrain) {
 		// determine color
 		//g.setColor(terrain.color);
 		Color aColor = new java.awt.Color(terrain.color.getRGB());
@@ -144,11 +128,10 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 			INSET+(y+1)*SCALE-1
 		);
 	}
-
-	void DrawObject(Graphics g, Point gp, GameObject obj)
-	{
+	
+	void DrawObject(Graphics g, Point gp, GameObject obj) {
 		Point sp = gameToScreenCoords(gp);
-
+		
 		if (obj instanceof Radar) {
 			g.setColor(Color.black);
 			// REMARK: Why the 3 * parcel width/height?
@@ -162,29 +145,26 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 			Point tsp = gameToScreenCoords(((Targettable)obj).getTarget());
 			g.drawLine(sp.x, sp.y, tsp.x, tsp.y);
 		}
-
+		
 		g.setColor(Color.red);
 		g.fillOval(sp.x-2, sp.y-2, 4, 4); // putPixel
 	}
-
-	public void paint(Graphics g)
-	{
+	
+	public void paint(Graphics g) {
 		// simply copy the off screen buffer to the window
 		g.drawImage(img, insets().left+1, insets().top+1, null);
 	}
-
-	public void updateMap()
-	{
+	
+	public void updateMap() {
 		int x, y;
-
+		
 		for ( x=0; x < satellite.map.getParcelMap().getWidth(); x++) {
 			for ( y=0; y < satellite.map.getParcelMap().getHeight(); y++) {
 				Parcel p = satellite.map.getParcelMap().getParcel(x,y);
 				DrawParcelTerrain( bg, x, y, p.getBaseHeight(), p.getTerrain() );
-				// TODO: write XY
 			} // for y
 		} // for x
-
+		
 		for (Enumeration e = satellite.map.getRange().getObjectEnumeration(); e.hasMoreElements(); ) {
 			GameObject obj = (GameObject)e.nextElement();
 			DrawObject(
@@ -196,33 +176,32 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 		// update screen
 		repaint();
 	}
-
-	public void update(Graphics  g)
-	{
+	
+	public void update(Graphics  g) {
 		paint(g);
 	}
-
+	
 	public Point screenToGameVect(Point p) {
 		Point tp = new Point(p);
 		tp.x = (int)(tp.x * fScaleX);
 		tp.y = (int)(tp.y * fScaleY);
 		return tp;
 	}
-
+	
 	public Point gameToScreenVect(Point p) {
 		Point tp = new Point(p);
 		tp.x = (int)(tp.x / fScaleX);
 		tp.y = (int)(tp.y / fScaleY);
 		return tp;
 	}
-
+	
 	public Point mouseToScreenCoords(Point p) {
 		Point tp = new Point(p);
 		Insets i = getInsets();
 		tp.translate(-i.left, -i.top);
 		return tp;
 	}
-
+	
 	public Point screenToGameCoords(Point p) {
 		Point tp = new Point(p);
 		tp.translate(-INSET, -INSET);
@@ -230,7 +209,7 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 		tp.y = (int)(tp.y * fScaleY);
 		return tp;
 	}
-
+	
 	public Point gameToScreenCoords(Point p) {
 		Point tp = new Point(p);
 		tp.x = (int)(tp.x / fScaleX);
@@ -238,37 +217,37 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 		tp.translate(INSET, INSET);
 		return tp;
 	}
-
+	
 	public void mouseClicked(MouseEvent event) {
 	}
-
+	
 	public void mousePressed(MouseEvent event) {
 		Point p = screenToGameCoords(mouseToScreenCoords(event.getPoint()));
 		Point pp = satellite.map.gameXYToParcelXY(p.x, p.y);
-System.out.println("MousePressed " + p + pp);
+		System.out.println("MousePressed " + p + pp);
 		MapView v = satellite.map.getRange(p, 32, 32);
 		for (Enumeration e = v.getObjectEnumeration(); e.hasMoreElements(); ) {
 			GameObject obj = (GameObject)e.nextElement();
-System.out.println(obj);
+			System.out.println(obj);
 			if (obj instanceof Targettable) {
 				Targettable to = (Targettable)obj;
-System.out.println("target = "+to.getTarget());
+				System.out.println("target = "+to.getTarget());
 			}
 		}
 	}
-
+	
 	public void mouseReleased(MouseEvent event) {
 	}
-
+	
 	public void mouseEntered(MouseEvent event) {
 	}
-
+	
 	public void mouseExited(MouseEvent event) {
 	}
-
+	
 	public void mouseMoved(MouseEvent event) {
 	}
-
+	
 	public void mouseDragged(MouseEvent event) {
 	}
 }
