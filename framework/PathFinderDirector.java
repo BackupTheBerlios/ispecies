@@ -2,16 +2,19 @@
  * PathFinderDirector.java
  *
  */
+
 import java.awt.Point;
+
+import util.*;
 
 /**
  *
  * <br>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PathFinderDirector implements Director {
 	/** The version number of this file as determined by the RCS. */
-	public static final String RCS_VERSION = "$Revision: 1.1 $";
+	public static final String RCS_VERSION = "$Revision: 1.2 $";
 	
 	public static int[][] FLAGMAP = null;
 
@@ -194,6 +197,9 @@ public class PathFinderDirector implements Director {
 
 /* Revision history, maintained by VSS.
  * $Log: PathFinderDirector.java,v $
+ * Revision 1.2  2002/11/11 09:06:25  quintesse
+ * Missing import for FloatPoint.
+ *
  * Revision 1.1  2002/11/10 08:14:59  puf
  * The PathFinderDirector implements the Director interface using my own path finding algorithm with an "ant based" cost function.
  *
