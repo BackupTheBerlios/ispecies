@@ -4,23 +4,37 @@ import java.util.*;
 // Something visible. No game logic.
 interface Visual {
 	// class constants
-	public void paint ( Graphics g, ImageStrip tileset, Point org );
+	public void paint ( Graphics g, Point org );
 }
 
 // Does not change. Ever.
-class StaticVisual 
+class IndexedVisual 
 	implements Visual 
 {
-	int			m_index;
+	ImageStrip	m_tileset;
+	int			m_nIndex;
 	
-	StaticVisual ( int _index )
-	{
-		m_index = _index;
+	IndexedVisual( ResourceManager _rm, int _nId, int _nIndex ) { 
+		m_tileset = _rm.getTileSet(_nId);
+		m_nIndex = _nIndex;
 	}
 	
-	public void paint ( Graphics g, ImageStrip tileset, Point org ) 
+	IndexedVisual( ImageStrip _tileset, int _nIndex ) { 
+		m_tileset = _tileset;
+		m_nIndex = _nIndex;
+	}
+	
+	public int getIndex() {
+		return m_nIndex;
+	}
+	
+	public void setIndex(int _nIndex) {
+		m_nIndex = _nIndex;
+	}
+	
+	public void paint ( Graphics g, Point org ) 
 	{
-		g.drawImage(tileset.getTile(m_index),org.x,org.y,null);
+		g.drawImage(m_tileset.getTile(m_nIndex), org.x, org.y, null);
 	};
 }
 
@@ -28,8 +42,13 @@ class StaticVisual
 class StateVisual 
 	implements Visual 
 {
-	Visual	m_visual[];
-	int		m_state;
+	ImageStrip	m_tileset;
+	Visual		m_visual[];
+	int			m_state;
+	
+	StateVisual ( ImageStrip _tileset ) { 
+		m_tileset = _tileset;
+	}
 
 	public void setStateVisual(int _state, Visual _visual)
 	{
@@ -50,9 +69,9 @@ class StateVisual
 		m_state = _state;
 	};
 	
-	public void paint (Graphics g, ImageStrip tileset, Point org ) 
+	public void paint (Graphics g, Point org ) 
 	{
-		m_visual[m_state].paint(g,tileset,org);
+		m_visual[m_state].paint(g, org);
 	};
 }
 
@@ -61,6 +80,5 @@ class AnimatedVisual
 	implements Visual 
 {
 	ImageStrip images;
-	public void paint ( Graphics g, ImageStrip tileset, Point org ) {};
+	public void paint ( Graphics g, Point org ) {};
 }
-
