@@ -1,8 +1,6 @@
-
 /*
  *  Targettable.java
  */
- 
 import java.awt.Point;
 
 /**
@@ -72,6 +70,9 @@ class TargettableGameObject extends GameObjectDecorator implements Targettable {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Targettable.java,v $
+ *  Revision 1.3  2003/06/05 15:16:14  puf
+ *  Layout, nothing else.
+ *
  *  Revision 1.2  2002/11/05 15:29:45  quintesse
  *  Added Javadoc comments.
  *  Added CVS history section.
