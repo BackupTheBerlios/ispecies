@@ -182,8 +182,8 @@ class IsometricViewport extends Frame {
 	 */
 	public void setViewportSize(int _width, int _height) {
 		setSize(
-				_width + insets().left + insets().right,
-				_height + insets().top + insets().bottom
+				_width + getInsets().left + getInsets().right,
+				_height + getInsets().top + getInsets().bottom
 				);
 		// create an off screen buffer for drawing
 		if (mBackBufferGfx != null) {
@@ -256,7 +256,7 @@ class IsometricViewport extends Frame {
 	 */
 	public void paint(Graphics g) {
 		// simply copy the off screen buffer to the window
-		g.drawImage(mBackBufferImg, insets().left, insets().top, null);
+		g.drawImage(mBackBufferImg, getInsets().left, getInsets().top, null);
 		//g.drawImage(img,0,0,null);
 	}
 
@@ -582,6 +582,9 @@ class IsometricEditViewport extends IsometricViewport implements KeyListener, Mo
 /*
  *  Revision history, maintained by CVS.
  *  $Log: IsometricViewport.java,v $
+ *  Revision 1.4  2002/11/07 00:56:53  quintesse
+ *  Changed deprecated calls to method insets() with getInsets().
+ *
  *  Revision 1.3  2002/11/05 15:18:56  quintesse
  *  Using Logger.log() instead of System.out.writeln();
  *  Added Javadoc comments.
