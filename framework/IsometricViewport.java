@@ -1,382 +1,592 @@
-
+/*
+ *  IsometricViewport.java
+ */
+ 
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-class IsometricDataSource
-	implements TimerReceiver
-// this class represents a view of the map as it is seen by the IsometricViewport
-{
-	Universe			game;
-	IsometricViewport	vp;				// should be a vector, to handle multiple views on this Isometric
-	TimerTrigger		trigger;
-	int					interval = 25;	// number of heartbeats between updates
-	GameMap				map;			// Isometric can see entire map
+/**
+ *  This class represents a view of the map as it is seen by the IsometricViewport
+ *
+ *@created    5 november 2002
+ */
+class IsometricDataSource implements TimerReceiver {
+	Universe mGame;
+	IsometricViewport mViewport;
+	// should be a vector, to handle multiple views on this Isometric
+	TimerTrigger mTrigger;
+	int mInterval = 25;
+	// number of heartbeats between updates
+	GameMap mMap;
+	// Isometric can see entire map
 
-	IsometricDataSource( Universe _game ) 
-	{
-		trigger = new TimerTrigger ( this );
-		trigger.setRepeat(true);
+
+	/**
+	 *  Constructor for the IsometricDataSource object
+	 *
+	 *@param  _game  A reference to the Universe this view exists in
+	 */
+	IsometricDataSource(Universe _game) {
+		mTrigger = new TimerTrigger(this);
+		mTrigger.setRepeat(true);
 		OnUniverse(_game);
-		System.out.println("IsometricDatasource created");
+		Logger.log("IsometricDatasource created");
 	}
 
-	IsometricDataSource ()
-	{
+
+	/**
+	 *  Constructor for the IsometricDataSource object
+	 */
+	IsometricDataSource() {
 		// no universe yet
 		this(null);
 	}
-	
-	public void OnUniverse(Universe _universe)
-	{
-		if (game != null)
-			game.heartBeat.remove(trigger);
-		game = _universe;
-		if (game != null)
-		{
-			map = game.getMap(); // can see the entire map
-			game.heartBeat.addRel ( trigger, interval );
+
+
+	/**
+	 *  Callback that gets called whenever the Universe changes
+	 *
+	 *@param  _universe  A reference to the Universe we move to
+	 */
+	public void OnUniverse(Universe _universe) {
+		if (mGame != null) {
+			mGame.heartBeat.remove(mTrigger);
+		}
+		mGame = _universe;
+		if (mGame != null) {
+			mMap = mGame.getMap();
+			// can see the entire map
+			mGame.heartBeat.addRel(mTrigger, mInterval);
 		}
 	}
 
-	public void doTimer(TimerTrigger tt) 
-	{
-		vp.updateMap();
-	}
-} // IsometricDataSource
 
-//class IsometricViewport extends Viewport
-class IsometricViewport extends Frame
-{
-	// member variables
-	Image				img = null; // off screen buffer
-	Graphics			bg = null;
-	Universe			game;
-	IsometricDataSource	source;
-		
-	// class constants
-	public final static float SCALE = 1f; // size of a tile relative to world scale
-	public final static Color BG_COLOR = Color.black;
-
-	IsometricViewport( Universe _game, IsometricDataSource _source ) 
-	{
-		super("Isometric");
-		setBackground(BG_COLOR);
-		show();
-		OnUniverse   (_game);
-		OnDataSource (_source);
-		System.out.println("IsometricViewport created");
-	}
-	IsometricViewport( Universe _game )
-	{
-		this (_game,null);
-	}
-	IsometricViewport ()
-	{
-		this(null,null);
-	}
-	protected void finalize()
-	{
-		bg.dispose(); // dispose of the Graphics
-	}
-	public void OnUniverse(Universe _universe)
-	{
-		game = _universe;
-	}
-	public void OnDataSource(IsometricDataSource _source)
-	{
-		if (source != null)
-		{	// disconnect from old Isometric
-			source.vp = null;
-		}
-		source = _source;
-		if (source != null)
-		{	// connect to new IsometricDataSource
-			source.vp = this;
-			// resize to show entire view of source
-			setViewportSize(
-				Math.round(source.map.getWidth()  * SCALE ),
-				Math.round(source.map.getHeight() * SCALE / 2) // isometric is half height
-			);
-		}
-	}
-	
-	public void setViewportSize(int _width, int _height)
-	{
-		setSize(
-			_width  + insets().left + insets().right,
-			_height + insets().top  + insets().bottom
-		);
-		// create an off screen buffer for drawing
-		if (bg != null) bg.dispose(); // free old one
-		img = createImage(_width, _height);
-		bg  = img.getGraphics();
-		System.out.println("IsometricViewport.setViewportSize: OSB("+_width+", "+_height+") "+((bg!=null)?"":"NOT ")+"created");
-	}
-		
-	void DrawParcelTerrain(Graphics g, int x, int y, int h, Terrain terrain)
-		// draws the terrain of a parcel
-	{
-		float hw = game.rm.getTileWidth() / 2; // half width
-		float hh = game.rm.getTileHeight() / 2; // half height
-		int   left   = Math.round((x*hw) + (y*hw));
-		int   top    = Math.round(
-						(img.getHeight(null) / 2) - hh - 
-						(x * hh / 2) + 
-						((y - h) * hh / 2)
-		               );
-		//g.drawImage(game.m_greenTiles.getTile(0),left,top,this);
-		terrain.getVisual().paint(g, new Point(left,top));
-	}
-	
-	void DrawObject(Graphics g, float x, float y, int size)
-	{
-		int tw = game.rm.getTileWidth();
-		int th = game.rm.getTileHeight();
-		float hw = tw / 2; // half width
-		float hh = th / 2; // half height
-		int   left = Math.round(x*hw) + 
-					 Math.round(y*hw);
-		int   top  = (img.getHeight(null) / 2) - 
-					 Math.round(x*hh/2) + 
-					 Math.round(y*hh/2);
-		g.setColor(Color.red);
-		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
-		g.fillOval(Math.round(left*SCALE), Math.round(top*SCALE), size, size);
-	}
-	
-	public void paint(Graphics g) 
-	{
-		// simply copy the off screen buffer to the window
-		g.drawImage(img, insets().left, insets().top, null);
-		//g.drawImage(img,0,0,null);
-	}
-
-	public void updateMap()
-	{
-		Rectangle r = bg.getClipBounds();
-		if (r != null) {
-			bg.clearRect(r.x, r.y, r.width, r.height);
-		}
-		// TODO: Clear entire image of we're not clipping
-
-		for (int x=0; x < source.map.getParcelMap().getWidth(); x++) {
-			for (int y=0; y < source.map.getParcelMap().getWidth(); y++) {
-				Parcel p = source.map.getParcelMap().getParcel(x,y);
-				DrawParcelTerrain(
-					bg,
-					x,
-					y,
-					p.getBaseHeight(),
-					p.getTerrain()
-				);
-			} // for y
-		} // for x
-		for (int x=0; x < source.map.getParcelMap().getWidth(); x++) {
-			for (int y=0; y < source.map.getParcelMap().getWidth(); y++) {
-				for (Enumeration e = source.map.getParcelMap().getParcel(x,y).objects(); e.hasMoreElements(); ) {
-					GameObject obj = (GameObject)e.nextElement();
-					DrawObject(
-						bg,
-						(float)obj.getPosition().x / source.map.mParcelWidth,
-						(float)obj.getPosition().y / source.map.mParcelHeight,
-						5
-					);
-				} // for objects
-			} // for y
-		} // for x
-		// update screen
-		repaint();
-	}
-	
-	public void update(Graphics  g)
-	{
-		paint(g);
+	/**
+	 *  Callback for this object's "heartbeat"
+	 *
+	 *@param  tt  Description of the Parameter
+	 */
+	public void doTimer(TimerTrigger tt) {
+		mViewport.updateMap();
 	}
 }
 
+/**
+ *  Description of the Class
+ *
+ *@created    5 november 2002
+ */
+class IsometricViewport extends Frame {
 
-class IsometricEditViewport extends IsometricViewport implements KeyListener, MouseListener { 
-	int FLASH_INTERVAL = 500;
-	boolean m_bFlashOn = false;
-	long m_lFlashSwitchTime = 0;
-	int m_nCursorX = 0, m_nCursorY = 0;
-	
-	IsometricEditViewport( Universe _game, IsometricDataSource _source ) {
-		super(_game, _source);
-		this.addKeyListener(this);
-		this.addMouseListener(this);
+	// member variables
+
+	Image mBackBufferImg = null;
+	Graphics mBackBufferGfx = null;
+	Universe mGame;
+	IsometricDataSource mSource;
+
+	/**
+	 *  Size of a tile relative to world size
+	 */
+	public final static float SCALE = 1f;
+
+	/**
+	 *  Background color
+	 */
+	public final static Color BG_COLOR = Color.black;
+
+
+	/**
+	 *  Constructor for the IsometricViewport object
+	 *
+	 *@param  _game    A reference to the Universe this view exists in
+	 *@param  _source  A reference to the model this view looks upon
+	 */
+	IsometricViewport(Universe _game, IsometricDataSource _source) {
+		super("Isometric");
+		setBackground(BG_COLOR);
+		show();
+		OnUniverse(_game);
+		OnDataSource(_source);
+		Logger.log("IsometricViewport created");
 	}
-	
-	IsometricEditViewport( Universe _game ) {
+
+
+	/**
+	 *  Constructor for the IsometricViewport object
+	 *
+	 *@param  _game    A reference to the Universe this view exists in
+	 */
+	IsometricViewport(Universe _game) {
 		this(_game, null);
 	}
-	
-	IsometricEditViewport() {
+
+
+	/**
+	 *  Constructor for the IsometricViewport object
+	 */
+	IsometricViewport() {
 		this(null, null);
 	}
-	
-	public void updateMap() { 
-		Rectangle r = bg.getClipBounds();
-		if (r != null) {
-			bg.clearRect(r.x, r.y, r.width, r.height);
+
+
+	/**
+	 *  Performs clean-up
+	 */
+	protected void finalize() {
+		mBackBufferGfx.dispose();
+		// dispose of the Graphics
+	}
+
+
+	/**
+	 *  Callback that gets called whenever the Universe changes
+	 *
+	 *@param  _universe  A reference to the Universe we move to
+	 */
+	public void OnUniverse(Universe _universe) {
+		mGame = _universe;
+	}
+
+
+	/**
+	 *  Callback that gets called whenever the model changes
+	 *
+	 *@param  _source  A reference to the model we're going to view
+	 */
+	public void OnDataSource(IsometricDataSource _source) {
+		if (mSource != null) {
+			// disconnect from old Isometric
+			mSource.mViewport = null;
 		}
-		// TODO: Clear entire bg if r == null
-		
-		for (int x=0; x < source.map.getParcelMap().getWidth(); x++) {
-			for (int y=0; y < source.map.getParcelMap().getWidth(); y++) {
-				if (m_bFlashOn || x != m_nCursorX || y != m_nCursorY) {
-					Parcel p = source.map.getParcelMap().getParcel(x,y);
-					DrawParcelTerrain(
-						bg,
+		mSource = _source;
+		if (mSource != null) {
+			// connect to new IsometricDataSource
+			mSource.mViewport = this;
+			// resize to show entire view of source
+			setViewportSize(
+					Math.round(mSource.mMap.getWidth() * SCALE),
+					Math.round(mSource.mMap.getHeight() * SCALE / 2) // isometric is half height
+			);
+		}
+	}
+
+
+	/**
+	 *  Sets the size the IsometricViewport
+	 *
+	 *@param  _width   The width of the view
+	 *@param  _height  The height of the view
+	 */
+	public void setViewportSize(int _width, int _height) {
+		setSize(
+				_width + insets().left + insets().right,
+				_height + insets().top + insets().bottom
+				);
+		// create an off screen buffer for drawing
+		if (mBackBufferGfx != null) {
+			mBackBufferGfx.dispose();
+		}
+		// free old one
+		mBackBufferImg = createImage(_width, _height);
+		mBackBufferGfx = mBackBufferImg.getGraphics();
+		Logger.log("IsometricViewport.setViewportSize: OSB(" + _width + ", " + _height + ") " + ((mBackBufferGfx != null) ? "" : "NOT ") + "created");
+	}
+
+
+	/**
+	 *  Draws the terrain at the specified position in the graphics context
+	 *
+	 *@param  g        Reference to the Graphics context the terrain should be drawn in
+	 *@param  x        The x position to start drawing
+	 *@param  y        The y position to start drawing
+	 *@param  h        The base-height to start drawing
+	 *@param  terrain  Description of the Parameter
+	 */
+	void DrawParcelTerrain(Graphics g, int x, int y, int h, Terrain terrain) {
+		// draws the terrain of a parcel
+
+		float hw = mGame.rm.getTileWidth() / 2;
+		// half width
+		float hh = mGame.rm.getTileHeight() / 2;
+		// half height
+		int left = Math.round((x * hw) + (y * hw));
+		int top = Math.round(
+				(mBackBufferImg.getHeight(null) / 2) - hh -
+				(x * hh / 2) +
+				((y - h) * hh / 2)
+		);
+		//g.drawImage(game.mgreenTiles.getTile(0),left,top,this);
+		terrain.getVisual().paint(g, new Point(left, top));
+	}
+
+
+	/**
+	 *  Draws the object at the specified position in the graphics context
+	 *
+	 *@param  g     Reference to the Graphics context the object should be drawn in
+	 *@param  x     The x position to start drawing
+	 *@param  y     The y position to start drawing
+	 *@param  size  The size of the object
+	 */
+	void DrawObject(Graphics g, float x, float y, int size) {
+		int tw = mGame.rm.getTileWidth();
+		int th = mGame.rm.getTileHeight();
+		float hw = tw / 2;
+		// half width
+		float hh = th / 2;
+		// half height
+		int left = Math.round(x * hw) +
+				Math.round(y * hw);
+		int top = (mBackBufferImg.getHeight(null) / 2) -
+				Math.round(x * hh / 2) +
+				Math.round(y * hh / 2);
+		g.setColor(Color.red);
+		//g.drawImage(dot,LEFT+x*SCALE,TOP+y*SCALE,null);
+		g.fillOval(Math.round(left * SCALE), Math.round(top * SCALE), size, size);
+	}
+
+
+	/**
+	 *  Paint the back buffer image to the specified Graphics context
+	 *
+	 *@param  g     Reference to the Graphics context the back buffer should be drawn in
+	 */
+	public void paint(Graphics g) {
+		// simply copy the off screen buffer to the window
+		g.drawImage(mBackBufferImg, insets().left, insets().top, null);
+		//g.drawImage(img,0,0,null);
+	}
+
+
+	/**
+	 *  Draws the current map to the back buffer
+	 */
+	public void updateMap() {
+		Rectangle r = mBackBufferGfx.getClipBounds();
+		if (r != null) {
+			mBackBufferGfx.clearRect(r.x, r.y, r.width, r.height);
+		}
+		// TODO: Clear entire image of we're not clipping
+
+		for (int x = 0; x < mSource.mMap.getParcelMap().getWidth(); x++) {
+			for (int y = 0; y < mSource.mMap.getParcelMap().getWidth(); y++) {
+				Parcel p = mSource.mMap.getParcelMap().getParcel(x, y);
+				DrawParcelTerrain(
+						mBackBufferGfx,
 						x,
 						y,
 						p.getBaseHeight(),
 						p.getTerrain()
-					);
-					float hw = game.rm.getTileWidth() / 2; // half width
-					float hh = game.rm.getTileHeight() / 2; // half height
-					int   left   = Math.round((x*hw) + (y*hw));
-					int   top    = Math.round(
-									(img.getHeight(null) / 2) - hh - 
-									(x * hh / 2) + 
-									((y - p.getBaseHeight()) * hh / 2)
-								   );
-					if (x == m_nCursorX && y == m_nCursorY) {
-						bg.setColor(Color.white);
-						bg.drawOval(
-							left + game.rm.getTileWidth()/2 - 1, 
-							top + game.rm.getTileHeight()/2 - 1,
-							3, 
-							3
-						);
-					}
-				}
-			} // for y
-		} // for x
-		if (System.currentTimeMillis() - m_lFlashSwitchTime > FLASH_INTERVAL) {
-			m_bFlashOn = !m_bFlashOn;
-			m_lFlashSwitchTime = System.currentTimeMillis();
+				);
+			}
+			// for y
 		}
-		
+		// for x
+		for (int x = 0; x < mSource.mMap.getParcelMap().getWidth(); x++) {
+			for (int y = 0; y < mSource.mMap.getParcelMap().getWidth(); y++) {
+				for (Enumeration e = mSource.mMap.getParcelMap().getParcel(x, y).objects(); e.hasMoreElements(); ) {
+					GameObject obj = (GameObject)e.nextElement();
+					DrawObject(
+							mBackBufferGfx,
+							(float)obj.getPosition().x / mSource.mMap.mParcelWidth,
+							(float)obj.getPosition().y / mSource.mMap.mParcelHeight,
+							5
+					);
+				}
+				// for objects
+			}
+			// for y
+		}
+		// for x
 		// update screen
 		repaint();
 	}
 
+
+	/**
+	 *  Paint the back buffer image to the specified Graphics context
+	 *
+	 *@param  g     Reference to the Graphics context the back buffer should be drawn in
+	 */
+	public void update(Graphics g) {
+		paint(g);
+	}
+}
+
+/**
+ *  Description of the Class
+ *
+ *@created    5 november 2002
+ */
+class IsometricEditViewport extends IsometricViewport implements KeyListener, MouseListener {
+	boolean mbFlashOn = false;
+	long mlFlashSwitchTime = 0;
+	int mnCursorX = 0, mnCursorY = 0;
+
+	public final static int FLASH_INTERVAL = 500;
+
+	/**
+	 *  Constructor for the IsometricEditViewport object
+	 *
+	 *@param  _game    A reference to the Universe this view exists in
+	 *@param  _source  A reference to the model this view looks upon
+	 */
+	IsometricEditViewport(Universe _game, IsometricDataSource _source) {
+		super(_game, _source);
+		this.addKeyListener(this);
+		this.addMouseListener(this);
+	}
+
+
+	/**
+	 *  Constructor for the IsometricEditViewport object
+	 *
+	 *@param  _game  Description of the Parameter
+	 */
+	IsometricEditViewport(Universe _game) {
+		this(_game, null);
+	}
+
+
+	/**
+	 *  Constructor for the IsometricEditViewport object
+	 */
+	IsometricEditViewport() {
+		this(null, null);
+	}
+
+
+	/**
+	 *  Draws the current map to the back buffer
+	 */
+	public void updateMap() {
+		Rectangle r = mBackBufferGfx.getClipBounds();
+		if (r != null) {
+			mBackBufferGfx.clearRect(r.x, r.y, r.width, r.height);
+		}
+		// TODO: Clear entire bg if r == null
+
+		for (int x = 0; x < mSource.mMap.getParcelMap().getWidth(); x++) {
+			for (int y = 0; y < mSource.mMap.getParcelMap().getWidth(); y++) {
+				if (mbFlashOn || x != mnCursorX || y != mnCursorY) {
+					Parcel p = mSource.mMap.getParcelMap().getParcel(x, y);
+					DrawParcelTerrain(
+							mBackBufferGfx,
+							x,
+							y,
+							p.getBaseHeight(),
+							p.getTerrain()
+					);
+					float hw = mGame.rm.getTileWidth() / 2;
+					// half width
+					float hh = mGame.rm.getTileHeight() / 2;
+					// half height
+					int left = Math.round((x * hw) + (y * hw));
+					int top = Math.round(
+							(mBackBufferImg.getHeight(null) / 2) - hh -
+							(x * hh / 2) +
+							((y - p.getBaseHeight()) * hh / 2)
+					);
+					if (x == mnCursorX && y == mnCursorY) {
+						mBackBufferGfx.setColor(Color.white);
+						mBackBufferGfx.drawOval(
+								left + mGame.rm.getTileWidth() / 2 - 1,
+								top + mGame.rm.getTileHeight() / 2 - 1,
+								3,
+								3
+						);
+					}
+				}
+			}
+			// for y
+		}
+		// for x
+		if (System.currentTimeMillis() - mlFlashSwitchTime > FLASH_INTERVAL) {
+			mbFlashOn = !mbFlashOn;
+			mlFlashSwitchTime = System.currentTimeMillis();
+		}
+
+		// update screen
+		repaint();
+	}
+
+
+	/**
+	 *  Handles key press events
+	 *
+	 *@param  e  The event to process
+	 */
 	public void keyPressed(KeyEvent e) {
 		Parcel p;
-		
+
 		switch (e.getKeyCode()) {
-			case KeyEvent.VK_LEFT:
-				if (m_nCursorX > 0) {
-					m_nCursorX--;
-				}
-				break;
-			case KeyEvent.VK_RIGHT:
-				if (m_nCursorX < (source.map.getParcelMap().getWidth() - 1)) {
-					m_nCursorX++;
-				}
-				break;
-			case KeyEvent.VK_UP:
-				if (m_nCursorY > 0) {
-					m_nCursorY--;
-				}
-				break;
-			case KeyEvent.VK_DOWN:
-				if (m_nCursorY < (source.map.getParcelMap().getHeight() - 1)) {
-					m_nCursorY++;
-				}
-				break;
-			case KeyEvent.VK_PAGE_UP:
-				p = source.map.getParcelMap().getParcel(m_nCursorX, m_nCursorY);
-				p.setBaseHeight(p.getBaseHeight() + 1);
-				break;
-			case KeyEvent.VK_PAGE_DOWN:
-				p = source.map.getParcelMap().getParcel(m_nCursorX, m_nCursorY);
-				p.setBaseHeight(p.getBaseHeight() - 1);
-				break;
-			case KeyEvent.VK_HOME:
-				p = source.map.getParcelMap().getParcel(m_nCursorX, m_nCursorY);
-				p.setBaseHeight(0);
-				break;
-			case KeyEvent.VK_S:
-				p = source.map.getParcelMap().getParcel(m_nCursorX, m_nCursorY);
-				Terrain t = p.getTerrain();
-				p.setTerrain(Terrain.getShapedTerrain(game.rm, t.getTileSet(), t.getShape() + 1 )); // TODO: Wrap if t.getShape()+1 >= shapeCount
-				break;
-			default:
-				if ((e.getModifiers() & e.CTRL_MASK) != 0) {
-					if (e.getKeyCode() == KeyEvent.VK_F) {
-						for (int x=0; x < source.map.getParcelMap().getWidth(); x++) {
-							for (int y=0; y < source.map.getParcelMap().getWidth(); y++) {
-								p = source.map.getParcelMap().getParcel(x, y);
-								p.setBaseHeight(0);
-								p.getTerrain().setShape(0);
+						case KeyEvent.VK_LEFT:
+							if (mnCursorX > 0) {
+								mnCursorX--;
 							}
-						}
-					} else if (e.getKeyCode() == KeyEvent.VK_W) {
-						MapBuilder mb = new MapBuilder(source.game.rm);
-						try {
-							mb.writeGameMap("test.map", source.map);
-						} catch (IOException err) {
-							System.out.println("Could not write map");
-						};
-					}
-				} else {
-					p = source.map.getParcelMap().getParcel(m_nCursorX, m_nCursorY);
-					int nShape = (int)e.getKeyChar() - (int)'a';
-					if ((nShape >= 0) && (nShape <= 24)) {
-						p.getTerrain().setShape(nShape);
-					}
-					int nTileSet = (int)e.getKeyChar() - (int)'0';
-					if ((nTileSet >= 0) && (nTileSet < source.game.rm.getTileSets().size())) {
-						p.getTerrain().setTileSet(nTileSet);
-					}
-				}
-				break;
+							break;
+						case KeyEvent.VK_RIGHT:
+							if (mnCursorX < (mSource.mMap.getParcelMap().getWidth() - 1)) {
+								mnCursorX++;
+							}
+							break;
+						case KeyEvent.VK_UP:
+							if (mnCursorY > 0) {
+								mnCursorY--;
+							}
+							break;
+						case KeyEvent.VK_DOWN:
+							if (mnCursorY < (mSource.mMap.getParcelMap().getHeight() - 1)) {
+								mnCursorY++;
+							}
+							break;
+						case KeyEvent.VK_PAGE_UP:
+							p = mSource.mMap.getParcelMap().getParcel(mnCursorX, mnCursorY);
+							p.setBaseHeight(p.getBaseHeight() + 1);
+							break;
+						case KeyEvent.VK_PAGE_DOWN:
+							p = mSource.mMap.getParcelMap().getParcel(mnCursorX, mnCursorY);
+							p.setBaseHeight(p.getBaseHeight() - 1);
+							break;
+						case KeyEvent.VK_HOME:
+							p = mSource.mMap.getParcelMap().getParcel(mnCursorX, mnCursorY);
+							p.setBaseHeight(0);
+							break;
+						case KeyEvent.VK_S:
+							p = mSource.mMap.getParcelMap().getParcel(mnCursorX, mnCursorY);
+							Terrain t = p.getTerrain();
+							p.setTerrain(Terrain.getShapedTerrain(mGame.rm, t.getTileSet(), t.getShape() + 1));
+							// TODO: Wrap if t.getShape()+1 >= shapeCount
+							break;
+						default:
+							if ((e.getModifiers() & e.CTRL_MASK) != 0) {
+								if (e.getKeyCode() == KeyEvent.VK_F) {
+									for (int x = 0; x < mSource.mMap.getParcelMap().getWidth(); x++) {
+										for (int y = 0; y < mSource.mMap.getParcelMap().getWidth(); y++) {
+											p = mSource.mMap.getParcelMap().getParcel(x, y);
+											p.setBaseHeight(0);
+											p.getTerrain().setShape(0);
+										}
+									}
+								} else if (e.getKeyCode() == KeyEvent.VK_W) {
+									MapBuilder mb = new MapBuilder(mGame.rm);
+									try {
+										mb.writeGameMap("test.map", mSource.mMap);
+									} catch (IOException err) {
+										Logger.log("Could not write map");
+									}
+									;
+								}
+							} else {
+								p = mSource.mMap.getParcelMap().getParcel(mnCursorX, mnCursorY);
+								int nShape = (int)e.getKeyChar() - (int)'a';
+								if ((nShape >= 0) && (nShape <= 24)) {
+									p.getTerrain().setShape(nShape);
+								}
+								int nTileSet = (int)e.getKeyChar() - (int)'0';
+								p.getTerrain().setTileSet(nTileSet);
+							}
+							break;
 		}
-		System.out.println(e.getKeyText(e.getKeyCode()));
+		Logger.log(e.getKeyText(e.getKeyCode()));
 	}
-	
+
+
+	/**
+	 *  Handles key release events
+	 *
+	 *@param  e  The event to process
+	 */
 	public void keyReleased(KeyEvent e) {
 	}
-	
+
+
+	/**
+	 *  Handles key typed events
+	 *
+	 *@param  e  The event to process
+	 */
 	public void keyTyped(KeyEvent e) {
 	}
-	
-	public void mouseExited(java.awt.event.MouseEvent mouseEvent) {
+
+
+	/**
+	 *  Handles mouse exit events
+	 *
+	 *@param  e  The event to process
+	 */
+	public void mouseExited(MouseEvent e) {
 	}
-	
-	public void mouseReleased(java.awt.event.MouseEvent mouseEvent) {
+
+
+	/**
+	 *  Handles mouse release events
+	 *
+	 *@param  e  The event to process
+	 */
+	public void mouseReleased(MouseEvent e) {
 	}
-	
-	public void mousePressed(java.awt.event.MouseEvent mouseEvent) {
-		float hw = game.rm.getTileWidth() / 2; // half width
-		float hh = game.rm.getTileHeight() / 2; // half height
+
+
+	/**
+	 *  Handles mouse pressed events
+	 *
+	 *@param  e  The event to process
+	 */
+	public void mousePressed(MouseEvent e) {
+		float hw = mGame.rm.getTileWidth() / 2;
+		// half width
+		float hh = mGame.rm.getTileHeight() / 2;
+		// half height
 		/*
-		int   left   = Math.round((x*hw) + (y*hw));
-		int   top    = Math.round(
-						(img.getHeight(null) / 2) - hh - 
-						(x * hh / 2) + 
-						((y - h) * hh / 2)
-		               );
-		*/
+		 *  int   left   = Math.round((x*hw) + (y*hw));
+		 *  int   top    = Math.round(
+		 *  (img.getHeight(null) / 2) - hh -
+		 *  (x * hh / 2) +
+		 *  ((y - h) * hh / 2)
+		 *  );
+		 */
 		/*
-		Point parcelPoint = source.map.gameXYToParcelXY(mouseEvent.getX(), mouseEvent.getY());
-		m_nCursorX = (int)Math.round(parcelPoint.getX());
-		m_nCursorY = (int)Math.round(parcelPoint.getY());
-		*/
-		m_nCursorX = (int)Math.round(mouseEvent.getX() / hw - mouseEvent.getY() / hh);
-		m_nCursorY = (int)Math.round(mouseEvent.getY() / hh);
-		System.out.println("cursor = ("+m_nCursorX+", "+m_nCursorY+")");
+		 *  Point parcelPoint = mSource.mMap.gameXYToParcelXY(mouseEvent.getX(), mouseEvent.getY());
+		 *  mnCursorX = (int)Math.round(parcelPoint.getX());
+		 *  mnCursorY = (int)Math.round(parcelPoint.getY());
+		 */
+		mnCursorX = (int)Math.round(e.getX() / hw - e.getY() / hh);
+		mnCursorY = (int)Math.round(e.getY() / hh);
+		Logger.log("cursor = (" + mnCursorX + ", " + mnCursorY + ")");
 	}
-	
-	public void mouseClicked(java.awt.event.MouseEvent mouseEvent) {
+
+
+	/**
+	 *  Handles mouse clicked events
+	 *
+	 *@param  e  The event to process
+	 */
+	public void mouseClicked(MouseEvent e) {
 	}
-	
-	public void mouseEntered(java.awt.event.MouseEvent mouseEvent) {
+
+
+	/**
+	 *  Handles mouse enter events
+	 *
+	 *@param  e  The event to process
+	 */
+	public void mouseEntered(MouseEvent e) {
 	}
-	
+
 }
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: IsometricViewport.java,v $
+ *  Revision 1.3  2002/11/05 15:18:56  quintesse
+ *  Using Logger.log() instead of System.out.writeln();
+ *  Added Javadoc comments.
+ *  Added CVS history section.
+ *  Made sure method and member names adhere to our standards.
+ *
+ */
 
