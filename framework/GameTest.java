@@ -107,10 +107,10 @@ public class GameTest extends Frame implements ActionListener {
 		String label = ev.getActionCommand();
 
 		if (label.equals("Radar")) {
-			new RadarViewport(game, new Radar(game));
+			new FramedViewportContainer(game, new RadarViewport(new Radar(game)));
 		}
 		if (label.equals("Satellite")) {
-			new SatelliteViewport(game, new Satellite(game));
+			new FramedViewportContainer(game, new SatelliteViewport(new Satellite(game)));
 		}
 		if (label.equals("Isometric")) {
 			new IsometricEditViewport(game, new IsometricDataSource(game));
@@ -144,8 +144,9 @@ public class GameTest extends Frame implements ActionListener {
 		frame.show();
 
 		//new IsometricEditViewport(frame.game,new IsometricDataSource(frame.game));
-		Frame aSatellite = new SatelliteViewport(frame.game, new Satellite(frame.game));
-		aSatellite.move(100, 240);
+		Frame aSatellite = new FramedViewportContainer(frame.game, new SatelliteViewport(new Satellite(frame.game)));
+
+		aSatellite.setLocation(100, 240);
 
 		// create tmp object to watch
 		GameObject obj = new TargettableGameObject(
@@ -174,6 +175,10 @@ public class GameTest extends Frame implements ActionListener {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: GameTest.java,v $
+ *  Revision 1.6  2002/11/07 00:54:38  quintesse
+ *  Now uses the niew Viewport/ViewportContainer system for Radar and Satellite models.
+ *  Changed deprecated method call move() to setLocation().
+ *
  *  Revision 1.5  2002/11/05 12:51:52  quintesse
  *  Added Javadoc comments.
  *  Moved log() method to the Universe class.
