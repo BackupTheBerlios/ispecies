@@ -198,7 +198,7 @@ public class TopPanel extends java.awt.Panel {
 	}//GEN-LAST:event_addMovingObjectBtnActionPerformed
 
 	private void showIsometricBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIsometricBtnActionPerformed
-		new IsometricEditViewport(game,new IsometricDataSource(game));
+		new IsometricViewport(game,new IsometricDataSource(game));
 	}//GEN-LAST:event_showIsometricBtnActionPerformed
 
 	private void showSatelliteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSatelliteBtnActionPerformed
