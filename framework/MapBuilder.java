@@ -14,7 +14,7 @@ public class MapBuilder
 	GameMap readGameMap(String _sFilename)
 		throws FileNotFoundException
 	{
-		return readGameMap(new DataInputStream(new FileInputStream(_sFilename)));
+		return readGameMap(new DataInputStream(new FileInputStream("res/maps/" + _sFilename)));
 	}
 
 	GameMap readGameMap(DataInputStream _in)
