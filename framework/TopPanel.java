@@ -168,8 +168,8 @@ public class TopPanel extends java.awt.Panel {
 		else if ("fm".equals(action)) {
 			System.out.println("Flag map for PathFinder class:");
 			System.out.println("FLAGMAP = "+PathFinder.FLAGMAP.length+" x "+PathFinder.FLAGMAP[0].length);
-			for (int x=0; x < PathFinder.FLAGMAP.length; x++) {
-				for (int y=0; y < PathFinder.FLAGMAP[x].length; y++) {
+			for (int y=0; y < PathFinder.FLAGMAP[1].length; y++) {
+				for (int x=0; x < PathFinder.FLAGMAP.length; x++) {
 					System.out.print(PathFinder.FLAGMAP[x][y]);
 				}
 				System.out.println("");
