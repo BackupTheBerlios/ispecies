@@ -6,15 +6,12 @@
 
 import java.util.*;
 import java.awt.*;
-import java.util.logging.*;
 
 /**
  *
  * @author  puf
  */
 public class TopPanel extends java.awt.Panel {
-	static Logger mLogger = Logger.getLogger(TopPanel.class.getName());
-
 	Universe game;
 	
 	/** Creates new form TopPanel */
@@ -142,21 +139,21 @@ public class TopPanel extends java.awt.Panel {
 
 	private void goBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goBtnActionPerformed
 		String command = actionTxt.getText();
-		mLogger.info("command = '"+command+"'");
+		Logger.info("command = '"+command+"'");
 		StringTokenizer parser = new StringTokenizer(command);
 		String action = parser.nextToken();
-		mLogger.info("action = '"+action+"'");
+		Logger.info("action = '"+action+"'");
 		if ("go".equals(action)) {
 			if (parser.hasMoreTokens()) {
-				mLogger.info("next token = '"+parser.nextToken()+"'");
+				Logger.info("next token = '"+parser.nextToken()+"'");
 			}
 			else {
 				// list game objects
 				ObjectEnumeration objects = game.map.getRange().getObjectEnumeration();
 				while (objects.hasMoreElements()) {
 					GameObject obj = (GameObject)objects.nextElement();
-					mLogger.info("name = "+obj.getName());
-					mLogger.info("position = "+obj.getPosition());
+					Logger.info("name = "+obj.getName());
+					Logger.info("position = "+obj.getPosition());
 					/*
 					Object t = obj.getInterface("Targettable");
 					if (obj.getInterface("Targettable") != null) {
@@ -164,7 +161,7 @@ public class TopPanel extends java.awt.Panel {
 					}
 					*/
 					if (obj instanceof Targettable) {
-						mLogger.info("target = "+((Targettable)obj).getTarget());
+						Logger.info("target = "+((Targettable)obj).getTarget());
 					}
 				}
 			}
@@ -236,6 +233,9 @@ public class TopPanel extends java.awt.Panel {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: TopPanel.java,v $
+ *  Revision 1.9  2003/06/05 15:14:56  puf
+ *  Removed dependency on JDK1.4 logging mechanism.
+ *
  *  Revision 1.8  2002/11/12 08:31:33  quintesse
  *  Now using official 1.4 JDK logging system.
  *
