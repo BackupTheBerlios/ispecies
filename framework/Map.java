@@ -5,47 +5,6 @@ import java.awt.Color;
 import java.awt.Point;
 
 
-class Vector3D {
-	protected double mx;
-	protected double my;
-	protected double mz;
-	
-	Vector3D(double _x, double _y, double _z) {
-		mx = _x;
-		my = _y;
-		mz = _z;
-	}
-	
-	public Vector3D add(Vector3D v) {
-		mx += v.mx;
-		my += v.my;
-		mz += v.mz;
-		return this;
-	}
-	
-	public Vector3D substract(Vector3D v) {
-		mx -= v.mx;
-		my -= v.my;
-		mz -= v.mz;
-		return this;
-	}
-	
-	public Vector3D multiply(double f) {
-		mx *= f;
-		my *= f;
-		mz *= f;
-		return this;
-	}
-	
-	public double dot(Vector3D v) {
-		double nRes = mx * v.mx;
-		nRes += my * v.my;
-		nRes += mz * v.mz;
-		return nRes;
-	}
-}
-
-
 class Parcel {
 	
 	protected Terrain m_terrain;
@@ -131,13 +90,14 @@ class HeightMap {
 		return 0.0;
 	}
 	
-	// Stupid name
 	// Returns the vector of the direction an object
 	// would slide in when left the the effects of gravity.
+	/*
 	public Vector3D getSlope(double xPos, double yPos) {
 		// TODO: Some slope calculations
 		return new Vector3D(0, 0, 0);
 	}
+	*/
 }
 
 
@@ -527,3 +487,15 @@ class ObjectEnumeration implements Enumeration {
 		return mObjWalk.nextElement();
 	}
 }
+
+
+/*
+ *  Revision history, maintained by CVS.
+ *  $Log: Map.java,v $
+ *  Revision 1.5  2002/11/05 15:43:26  quintesse
+ *  Removed Vector3D class.
+ *  Commented-out an unused method using Vector3D.
+ *  Added CVS history section.
+ *
+ */
+
