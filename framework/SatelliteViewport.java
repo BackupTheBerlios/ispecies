@@ -89,11 +89,47 @@ public class SatelliteViewport extends Viewport {
 			Point tsp = gameToScreenCoords(((Targettable)obj).getTarget());
 			g.drawLine(sp.x, sp.y, tsp.x, tsp.y);
 		}
+		if (obj instanceof PathFinder) {
+			PathFinder pf = (PathFinder)obj;
+			if (pf.mDirector instanceof PathFinderDirector) {
+				PathFinderDirector director = (PathFinderDirector)pf.mDirector;
+				if (director.mLatestNode != null) {
+					g.setColor(Color.magenta);
+					Point current = gameToScreenCoords(director.mLatestNode.mPosition.toPoint());
+					g.drawOval(current.x-1, current.y-1, 2, 2);
+				}
+				drawPathNode(g, director.mStartNode);
+				if (director.mLatestNode != null) {
+					g.setColor(Color.magenta);
+					Point current = gameToScreenCoords(director.mLatestNode.mPosition.toPoint());
+					g.drawOval(current.x-1, current.y-1, 2, 2);
+				}
+			}
+		}
 		
 		g.setColor(Color.red);
 		g.fillOval(sp.x-2, sp.y-2, 4, 4); // putPixel
 	}
-	
+
+	void drawPathNode(Graphics g, PathFinderDirector.PathNode node) {
+		if (node != null) {
+			Point point = gameToScreenCoords(node.mPosition.toPoint());
+			// draw the point
+			g.drawOval(point.x - 1, point.y - 1, 1, 1);
+			// for each of the next nodes
+			for (int i=0; i < 3; i++) {
+				if (node.mNextNodes[i] != null) {
+					g.setColor(new Color((int)(node.mNextNodes[i].mLowestCost / 2)));
+					// draw a vector to the next node
+					Point dst = gameToScreenCoords(node.mNextNodes[i].mPosition.toPoint());
+					g.drawLine(point.x, point.y, dst.x, dst.y);
+					// let the next node draw itself
+					drawPathNode(g, node.mNextNodes[i]);
+				}
+			}
+		}
+	}
+
 	public void paint(Graphics g) {
 		int x, y;
 		
@@ -132,6 +168,9 @@ public class SatelliteViewport extends Viewport {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: SatelliteViewport.java,v $
+ *  Revision 1.2  2002/11/10 08:20:12  puf
+ *  Draws the path of the PathFinderDirector (for debugging purposes).
+ *
  *  Revision 1.1  2002/11/07 01:39:13  quintesse
  *  Put Model and View in separate files
  *
