@@ -12,6 +12,7 @@ interface Trigger {
 
 class TriggerPool {
 	final Vector triggers = new Vector();
+	final Vector removed = new Vector();
 
 	/* Method declarations
 	public void add(Trigger t);
@@ -20,20 +21,29 @@ class TriggerPool {
 	*/
 
 	public void add(Trigger t) {
-	triggers.addElement(t);
+		triggers.addElement(t);
 	}
 
 	public void remove(Trigger t) {
-		triggers.removeElement(t);
+		if ( ! triggers.removeElement(t) ) {
+			// Trigger not found, it is probably active. Add to secondary list to be removed when activation finishes
+			removed.add(t);
+		}
 	}
 
 	public void trigger() {
 		if (!triggers.isEmpty()) {
-			Trigger t = (Trigger)triggers.firstElement();
-			triggers.removeElementAt(0);
+			Trigger t = (Trigger)triggers.remove(0);
 			t.activate();
 			if (t.repeat()) {
-				add(t);
+				if ( ! removed.contains(t) ) {
+					//System.out.println("Putting trigger back into pool ("+t+")");
+					add(t);
+				}
+				else {
+					//System.out.println("Trigger was removed while it was active ("+t+")");
+					removed.removeElement(t);
+				}
 			}
 		}
 	}
@@ -180,7 +190,7 @@ class TimerTriggerPool extends TriggerPool {
 	 * be activated (the 'gametime' will be greater than or at least
 	 * equal to their 'triggertime').
 	 */
-	public void tick() {
+	public synchronized void tick() {
 		gametime++;
 		while (!triggers.isEmpty()
 		 && gametime >= ((TimerTrigger)triggers.firstElement()).triggertime) {
