@@ -1,6 +1,7 @@
 import java.io.*;
 import java.awt.*;
 import java.util.*;
+import java.util.logging.*;
 
 import util.*;
 
@@ -11,6 +12,8 @@ import util.*;
  *@created    6 november 2002
  */
 public class Radar extends BaseGameObject implements TimerReceiver {
+	static Logger mLogger = Logger.getLogger(Radar.class.getName());
+
 	Universe mGame = null;
 	RadarViewport mViewport; // should be a vector, to handle multiple views on this radar
 	TimerTrigger mTrigger;
@@ -36,7 +39,7 @@ public class Radar extends BaseGameObject implements TimerReceiver {
 		mTrigger = new TimerTrigger(this);
 		mTrigger.setRepeat(true);
 		setUniverse(_game);
-		Logger.log("Radar created");
+		mLogger.info("Radar created");
 	}
 
 
@@ -151,6 +154,9 @@ public class Radar extends BaseGameObject implements TimerReceiver {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Radar.java,v $
+ *  Revision 1.3  2002/11/12 08:32:54  quintesse
+ *  Now using official 1.4 JDK logging system.
+ *
  *  Revision 1.2  2002/11/11 10:50:56  quintesse
  *  Changed getMap() to getRadarMap() to avoid conflict with a method with the same name in BaseGameObject (and it is more logical there so decided to change this one).
  *

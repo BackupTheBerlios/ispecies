@@ -1,5 +1,6 @@
 
 import java.util.*;
+import java.util.logging.*;
 
 /**
  *@author     Tako
@@ -28,6 +29,8 @@ interface Trigger {
  *@created    5 november 2002
  */
 class TriggerPool {
+	static Logger mLogger = Logger.getLogger(TriggerPool.class.getName());
+
 	final Vector mTriggers = new Vector();
 	final Vector mRemoved = new Vector();
 
@@ -76,10 +79,10 @@ class TriggerPool {
 			t.activate();
 			if (t.isRepeating()) {
 				if (!mRemoved.contains(t)) {
-					//Logger.log("Putting trigger back into pool ("+t+")");
+					//mLogger.info("Putting trigger back into pool ("+t+")");
 					add(t);
 				} else {
-					//Logger.log("Trigger was removed while it was active ("+t+")");
+					//mLogger.info("Trigger was removed while it was active ("+t+")");
 					mRemoved.removeElement(t);
 				}
 			}
@@ -326,6 +329,9 @@ class TimerTriggerPool extends TriggerPool {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: Triggers.java,v $
+ *  Revision 1.4  2002/11/12 08:31:33  quintesse
+ *  Now using official 1.4 JDK logging system.
+ *
  *  Revision 1.3  2002/11/05 15:31:07  quintesse
  *  Using Logger.log() instead of System.out.writeln();
  *  Added Javadoc comments.

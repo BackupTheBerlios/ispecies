@@ -4,6 +4,7 @@
  */
 import java.awt.*;
 import java.awt.geom.*;
+import java.util.logging.*;
 
 import util.*;
 
@@ -13,6 +14,8 @@ import util.*;
  * @author  puf
  */
 public class PathFinder extends BaseGameObject implements Targettable, TimerReceiver {
+	static Logger mLogger = Logger.getLogger(PathFinder.class.getName());
+
 	private Point mTarget = null;
 	private Universe mGame = null;
 	private TimerTrigger mTrigger;
@@ -92,12 +95,14 @@ public class PathFinder extends BaseGameObject implements Targettable, TimerRece
 	}
 	
 	public void log(String _line) {
-		Logger.log(getName()+": "+_line);
+		mLogger.info(getName()+": "+_line);
 	}
 	
 }
 
 class OneStepLookAheadDirector implements Director, ObjectListener {
+	static Logger mLogger = Logger.getLogger(OneStepLookAheadDirector.class.getName());
+
 	public static int[][] FLAGMAP = null;
 
 	public synchronized int[][] getFLAGMAP(GameMap _map) {
@@ -157,13 +162,16 @@ class OneStepLookAheadDirector implements Director, ObjectListener {
 	}
 	
 	public void log(String _line) {
-		Logger.log("OneStepLookAheadDirector: "+_line);
+		mLogger.info("OneStepLookAheadDirector: "+_line);
 	}
 }
 
 /*
  *  Revision history, maintained by CVS.
  *  $Log: PathFinder.java,v $
+ *  Revision 1.10  2002/11/12 08:34:16  quintesse
+ *  Now using official 1.4 JDK logging system.
+ *
  *  Revision 1.9  2002/11/11 10:48:45  quintesse
  *  PathFinder now uses the kill() method of the GameObject to die.
  *  PathFinder adds the Director being used to its list of event listeners.

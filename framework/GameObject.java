@@ -3,6 +3,7 @@
  */
 
 import java.util.*;
+import java.util.logging.*;
 
 import util.*;
 
@@ -83,6 +84,8 @@ interface GameObject {
  *@created    5 november 2002
  */
 class BaseGameObject implements GameObject {
+	static Logger mLogger = Logger.getLogger(BaseGameObject.class.getName());
+
 	GameMap mMap;
 	FloatPoint mPosition;
 	String mName;
@@ -102,7 +105,7 @@ class BaseGameObject implements GameObject {
 		mPosition = null;
 		setPosition(new FloatPoint(_x, _y));
 		mListeners = new ArrayList();
-		Logger.log("Created new GameObject: " + this);
+		mLogger.info("Created new GameObject: " + this);
 	}
 
 
@@ -451,6 +454,9 @@ class RandomGameObjectMover extends GameObjectDecorator
 /*
  *  Revision history, maintained by CVS.
  *  $Log: GameObject.java,v $
+ *  Revision 1.9  2002/11/12 08:33:26  quintesse
+ *  Now using official 1.4 JDK logging system.
+ *
  *  Revision 1.8  2002/11/11 10:46:36  quintesse
  *  Added addObjectListener(), kill() and kill(_killer) methods to the GameObject interface.
  *  BaseGameObject implements the new methods by allowing ObjectListeners to register themselves with the object and by notifying them when the object's kill() method has been called.

@@ -4,18 +4,21 @@
  */
 
 import java.awt.Point;
+import java.util.logging.*;
 
 import util.*;
 
 /**
  *
  * <br>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class PathFinderDirector implements Director, ObjectListener {
 	/** The version number of this file as determined by the RCS. */
-	public static final String RCS_VERSION = "$Revision: 1.3 $";
+	public static final String RCS_VERSION = "$Revision: 1.4 $";
 	
+	static Logger mLogger = Logger.getLogger(PathFinderDirector.class.getName());
+
 	public static int[][] FLAGMAP = null;
 
 	public static synchronized int[][] getFLAGMAP(GameMap _map) {
@@ -191,7 +194,7 @@ public class PathFinderDirector implements Director, ObjectListener {
 	}
 
 	public void log(String _line) {
-		Logger.log("PathFinderDirector: "+_line);
+		mLogger.info("PathFinderDirector: "+_line);
 	}
 	
 }
@@ -199,6 +202,9 @@ public class PathFinderDirector implements Director, ObjectListener {
 
 /* Revision history, maintained by VSS.
  * $Log: PathFinderDirector.java,v $
+ * Revision 1.4  2002/11/12 08:34:38  quintesse
+ * Now using official 1.4 JDK logging system.
+ *
  * Revision 1.3  2002/11/11 10:49:39  quintesse
  * The PathFinderDirector now listens for the GameObject's died() event.
  *

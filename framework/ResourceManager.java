@@ -2,6 +2,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.*;
 import java.awt.*;
 
 /**
@@ -10,6 +11,8 @@ import java.awt.*;
  *@created    5 november 2002
  */
 public class ResourceManager {
+	static Logger mLogger = Logger.getLogger(ResourceManager.class.getName());
+
 	Dictionary dictImageNames;
 	Dictionary dictImages;
 	Dictionary dictTileNames;
@@ -74,7 +77,7 @@ public class ResourceManager {
 		Integer i = new Integer(_nId);
 		dictImageNames.put(i, _sName);
 		dictImages.put(i, img);
-		Logger.log("Registered image '" + _sName + "'");
+		mLogger.info("Registered image '" + _sName + "'");
 	}
 
 
@@ -126,7 +129,7 @@ public class ResourceManager {
 		dictTileMaps.put(i, tileMap);
 		dictTiles.put(i, tiles);
 
-		Logger.log("Registered tileset '" + _sName + "' (#" + _nId + ")");
+		mLogger.info("Registered tileset '" + _sName + "' (#" + _nId + ")");
 	}
 
 
@@ -187,6 +190,9 @@ public class ResourceManager {
 /*
  *  Revision history, maintained by CVS.
  *  $Log: ResourceManager.java,v $
+ *  Revision 1.4  2002/11/12 08:32:54  quintesse
+ *  Now using official 1.4 JDK logging system.
+ *
  *  Revision 1.3  2002/11/05 15:39:41  quintesse
  *  Added Javadoc comments.
  *  Added a method to open a InputStream on a file (either a physical one or one from the resource bundle).
