@@ -48,13 +48,11 @@ class BaseGameObject
 		mMap = _map;
 		mPosition = new Point(x, y);
 		setPosition(mPosition);
-System.out.println("Created new GameObject '" + this.getClass().getName() + "' [x=" + x + ",y=" + y + "]");
 	}
 	
 	protected void finalize() 
 	{
 		mParcel.removeObject(this);
-System.out.println("Destroyed GameObject '" + this.getClass().getName() + "' [x=" + mPosition.x + ",y=" + mPosition.y + "]");
 	}
 
 	public Point getPosition()
