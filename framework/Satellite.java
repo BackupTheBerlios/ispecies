@@ -152,7 +152,9 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 	
 	public void paint(Graphics g) {
 		// simply copy the off screen buffer to the window
-		g.drawImage(img, insets().left+1, insets().top+1, null);
+		if (img != null) {
+			g.drawImage(img, insets().left+1, insets().top+1, null);
+		}
 	}
 	
 	public void updateMap() {
@@ -169,7 +171,7 @@ class SatelliteViewport extends Frame implements MouseListener, MouseMotionListe
 			GameObject obj = (GameObject)e.nextElement();
 			DrawObject(
 				bg,
-				obj.getPosition(),
+				obj.getPosition().toPoint(),
 				obj
 			);
 		} // for objects
