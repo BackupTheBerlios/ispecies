@@ -126,9 +126,10 @@ public class TopPanel extends java.awt.Panel {
 
     }//GEN-END:initComponents
 
+	private static int mFinderIndex = 0;
 	private void addPathFinderBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPathFinderBtnActionPerformed
 		PathFinder mover = new PathFinder(
-			"finder",
+			"finder_"+mFinderIndex++,
 			game.getMap(),
 			game,
 			new Point(10, 10)
